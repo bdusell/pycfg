@@ -1,0 +1,6 @@
+#!/bin/bash
+# Use to view HTML output from test scripts
+#     % <test-with-html-output> | browser
+TMP=$(tempfile -s .html) || { echo 'error: unable to create temp file' >&2; exit 1; }
+cat $@ > "$TMP" && { xdg-open "$TMP" || gnome-open "$TMP"; }
+rm -f "$TMP"

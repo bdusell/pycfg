@@ -1,0 +1,7 @@
+#!/bin/bash
+# Use to view dot output from test scripts
+#     % <test-with-dot-output> | dotimg
+TMP=$(tempfile -s .png) || { echo 'error: unable to create temp file' >&2; exit 1; }
+cat $@ | dot -Tpng > "$TMP" && { xdg-open "$TMP" || gnome-open "$TMP"; }
+rm -f "$TMP"
+
