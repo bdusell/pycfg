@@ -1,14 +1,11 @@
 '''A set of mixin classes.'''
 
 class Comparable(object):
-    '''A mixin class which defines all of the comparison methods in terms of
-    the __lt__ method.'''
-
-    def __eq__(self, y):
-        return not self.__lt__(y) and not y.__lt__(self)
+    '''A mixin class which defines all of the rich comparison methods in terms
+    of the __eq__ and __lt__ methods.'''
 
     def __ne__(self, y):
-        return self.__lt__(y) or y.__lt__(self)
+        return not self.__eq__(y)
 
     def __gt__(self, y):
         return y.__lt__(self)
@@ -32,9 +29,6 @@ class Keyed(object):
     def __eq__(self, y):
         return self.__key__().__eq__(y.__key__())
 
-    def __ne__(self, y):
-        return self.__key__().__ne__(y.__key__())
-
 class Subscripted(object):
     '''A mixin class which affixes a "subscript" to its objects, which is
     useful for creating similar but non-equal objects from the same value.'''
@@ -56,8 +50,9 @@ class Subscripted(object):
     def __eq__(self, y):
         '''Two subscripted objects must have equal values and equal subscripts
         to be equal.'''
-        return isinstance(y, Subscripted) and self.subscript == y.subscript \
-               and super(Subscripted, self).__eq__(y)
+        return isinstance(y, Subscripted) and \
+               self.subscript == y.subscript and \
+               super(Subscripted, self).__eq__(y)
 
 class Primed(Subscripted):
     '''A mixin class which affixes a "prime mark" to an object, to distinguish
@@ -77,5 +72,6 @@ class Primed(Subscripted):
     def __eq__(self, y):
         '''A primed object is equal to another if and only if the other object
         is a primed object with the same value.'''
-        return isinstance(y, Primed) and super(Subscripted, self).__eq__(y)
+        return isinstance(y, Primed) and \
+               super(Primed, self).__eq__(y)
 

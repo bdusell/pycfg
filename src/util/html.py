@@ -1,3 +1,5 @@
+'''Utilities for formatting HTML output.'''
+
 def html(x):
     return x.__html__()
 

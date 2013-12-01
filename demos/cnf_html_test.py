@@ -1,9 +1,9 @@
 '''Convert a grammar to CNF form and print it to stdout in HTML.'''
 
-from cfg import cfg
+from cfg import cfg, cnf
 
 CFG = cfg.ContextFreeGrammar
-CNF = cfg.ChomskyNormalForm
+CNF = cnf.ChomskyNormalForm
 
 G = CFG('''
 S -> ASA | aB

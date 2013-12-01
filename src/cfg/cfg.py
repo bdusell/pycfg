@@ -7,9 +7,8 @@ import cgi
 from util.digraph import Digraph
 from util.tree import Tree
 from util.mixin import Comparable, Keyed, Subscripted, Primed
-from util.moreitertools import powerset
 
-class Symbol(Keyed, Comparable):
+class Symbol(Comparable, Keyed):
     '''A base class for symbols which appear in a grammar. Terminal and
     Nonterminal classes derive from this.'''
 
@@ -29,7 +28,7 @@ class Symbol(Keyed, Comparable):
     def __eq__(self, y):
         '''Symbols must be of the same class and have the same identifier to be
         considered equal.'''
-        return isinstance(y, self.__class__) and \
+        return self.__class__ == y.__class__ and \
                self._identifier == y._identifier
 
     def __key__(self):
@@ -107,6 +106,7 @@ class SubscriptedNonterminal(Subscripted, Nonterminal):
         return _next_unused(name, nonterminals, 1, SubscriptedNonterminal)
 
 class PrimedNonterminal(Primed, Nonterminal):
+    '''A nonterminal with some number of "prime" marks.'''
 
     def __init__(self, name, num_primes):
         Primed.__init__(self, num_primes)
@@ -261,7 +261,8 @@ class ContextFreeGrammar(object):
             this listing.
         3. ContextFreeGrammar(Nu, Sigma, P, S)
             The CFG's nonterminals (Nu), terminals (Sigma), production rules
-            (P), and start variable (S) are explicitly given.'''
+            (P), and start variable (S) are explicitly given and checked for
+            correctness.'''
         if len(args) == 1:
             if isinstance(args[0], str):
                 self._init_string(*args)
@@ -301,7 +302,7 @@ class ContextFreeGrammar(object):
     @property
     def symbols(self):
         '''Return a list of the grammar's nonterminals and terminals.'''
-        return list(self.nonterminals) + list(self.terminals)
+        return self.nonterminals | self.terminals
 
     def _get_symbols_of_type(self, T):
         return set(s for p in self._productions for s in p.right_side \
@@ -311,7 +312,8 @@ class ContextFreeGrammar(object):
         lines = filter(None, string.split('\n'))
         split_sides = [[w.strip() for w in line.split('->')] for line in lines]
         for left, right in split_sides:
-            assert len(left) == 1 and left.isupper()
+            if not (len(left) == 1 and left.isupper()):
+                raise ValueError('"%s" is not valid on the left side of a production rule')
         self._extra_nonterminals = set()
         self._extra_terminals = set()
         self._productions = []
@@ -325,12 +327,16 @@ class ContextFreeGrammar(object):
                     else:
                         right_side.append(Terminal(c))
                 self._productions.append(ProductionRule(left_side, right_side))
+        if not self._productions:
+            raise ValueError('not production rules were given')
         self._start = self._productions[0].left_side
 
     def _check_productions(self, productions):
-        assert productions
+        if not productions:
+            raise ValueError('no production rules were given')
         for p in productions:
-            assert isinstance(p, ProductionRule)
+            if not isinstance(p, ProductionRule):
+                raise TypeError('production rules must be instances of ProductionRule')
 
     def _init_productions(self, productions):
         self._extra_nonterminals = set()
@@ -341,19 +347,28 @@ class ContextFreeGrammar(object):
     def _check_tuple(self, nonterminals, terminals, productions, start):
         # Check nonterminals
         for n in nonterminals:
-            assert isinstance(n, Nonterminal)
+            if not isinstance(n, Nonterminal):
+                raise TypeError('%r is not an instance of Nonterminal' % n)
         # Check terminals
         for t in terminals:
-            assert isinstance(t, Terminal)
+            if not isinstance(t, Terminal):
+                raise TypeError('%r is not an instance of Terminal' % t)
         # Check production rules
+        if not productions:
+            raise ValueError('no production rules were given')
         for p in productions:
-            assert isinstance(p, ProductionRule)
-            assert p.left_side in nonterminals
+            if not isinstance(p, ProductionRule):
+                raise TypeError('%r is not an instance of ProductionRule' % p)
+            if not (p.left_side in nonterminals):
+                raise ValueError('%r is on the left side of a production rule but is not a nonterminal in the grammar' % p.left_side)
             for s in p.right_side:
-                assert s in terminals or s in nonterminals
+                if not (s in terminals or s in nonterminals):
+                    raise ValueError('%r is on the right side of a production rule but is not a symbol in the grammar' % s)
         # Check start symbol
-        assert isinstance(start, Nonterminal)
-        assert start in nonterminals
+        if not isinstance(start, Nonterminal):
+            raise TypeError('start variable %r is not an instance of Nonterminal' % start)
+        if not (start in nonterminals):
+            raise ValueError('start variable %r is not a nonterminal in the grammar' % start)
 
     def _init_tuple(self, nonterminals, terminals, productions, start):
         # Assign members
@@ -422,152 +437,3 @@ class ContextFreeGrammar(object):
                 G.add_edge(rule.left_side, rule.right_side[0])
         return G.cyclic()
 
-def is_cnf_rule(r, start):
-    '''Return whether a production rule is in CNF. Must indicate the grammar's
-    start variable.'''
-    rs = r.right_side
-    return (len(rs) == 1 and isinstance(rs[0], Terminal)) or \
-           (len(rs) == 2 and all(map(lambda x: isinstance(x, Nonterminal) and \
-                                     x != start, rs))) or \
-           (r.left_side == start and not rs)
-
-def is_cnf(G):
-    '''Return whether a grammar is in CNF.'''
-    return all(map(lambda x: is_cnf_rule(x, G.start), G.productions))
-
-def _first_rule_that(productions, pred):
-    for i, p in enumerate(productions):
-        if pred(p):
-            return i
-
-def _first_empty_rule(productions, start):
-    return _first_rule_that(productions, \
-                            lambda x: not x.right_side and \
-                            not x.left_side == start)
-
-def _first_unit_rule(productions):
-    return _first_rule_that(productions, \
-                            lambda x: len(x.right_side) == 1 \
-                            and isinstance(x.right_side[0], Nonterminal))
-
-def substitutions(sentence, production):
-    '''Returns all of the distinct ways of applying a derivation rule to a
-    sentence, including no change at all.'''
-    indices = [i for i, s in enumerate(sentence) if s == production.left_side]
-    result = []
-    for subset in powerset(indices):
-        substitution = []
-        for i, symbol in enumerate(sentence):
-            if i in subset:
-                substitution.extend(production.right_side)
-            else:
-                substitution.append(symbol)
-        if substitution not in result:
-            result.append(substitution)
-    return result
-
-def chain(p, used_variables):
-    '''Given a production rule p, return a list of equivalent rules such that
-    the right side of each rule is no more than two symbols long.'''
-    rs = p.right_side
-    if len(rs) <= 2:
-        return [p]
-    first = rs[0]
-    second_name = ''.join([str(s) for s in rs[1:]])
-    second = SubscriptedNonterminal.next_unused(second_name, used_variables)
-    first_new_rule = ProductionRule(p.left_side, (first, second))
-    second_new_rule = ProductionRule(second, rs[1:])
-    return [first_new_rule] + \
-           chain(second_new_rule, used_variables | set([second]))
-
-def get_variables(productions):
-    '''Return a set of all the variables which appear in a list of productions.
-    '''
-    result = set()
-    for p in productions:
-        result.add(p.left_side)
-        for s in p.right_side:
-            if isinstance(s, Nonterminal):
-                result.add(s)
-    return result
-
-def replace_terminals(p, proxy_rules):
-    '''Replace all the terminal symbols in a production rule with equivalent
-    variables, given a mapping from terminals to proxy production rules. Return
-    a pair containing the fixed rule and a list of the terminals replaced.'''
-    rs = p.right_side
-    if len(rs) < 2 or p in proxy_rules.itervalues():
-        return p, []
-    new_rs = []
-    replaced = []
-    for s in rs:
-        if isinstance(s, Terminal):
-            new_rs.append(proxy_rules[s].left_side)
-            replaced.append(s)
-        else:
-            new_rs.append(s)
-    return ProductionRule(p.left_side, new_rs), replaced
-
-def ChomskyNormalForm(G):
-    '''Given a CFG G, return an equivalent CFG in Chomsky normal form.'''
-            
-    productions = list(G.productions)
-    
-    # Add a new start variable S0 and add the rule S0 -> S
-    S0 = SubscriptedNonterminal(G.start.name, 0)
-    productions[:0] = [ProductionRule(S0, [G.start])]
-
-    # Remove e rules
-    removed_rules = []
-    while True:
-        i = _first_empty_rule(productions, S0)
-        if i is None:
-            break
-        pe = productions[i]
-        removed_rules.append(pe)
-        del productions[i]
-        new_rules = [ProductionRule(rule.left_side, sentence) \
-                     for rule in productions[1:] \
-                     for sentence in substitutions(rule.right_side, pe)]
-        productions[1:] = [r for r in new_rules if r not in removed_rules]
-
-    # Remove unit rules
-    removed_rules = []
-    while True:
-        i = _first_unit_rule(productions)
-        if i is None:
-            break
-        pu = productions[i]
-        removed_rules.append(pu)
-        new_rules = [ProductionRule(pu.left_side, p.right_side) \
-                     for p in productions if p.left_side == pu.right_side[0]]
-        productions[i:i+1] = [r for r in new_rules if r not in productions \
-                              and r not in removed_rules]
-
-    # Chain right sides of rules
-    i = 0
-    while i < len(productions):
-        new_rules = chain(productions[i], get_variables(productions))
-        productions[i:i+1] = new_rules
-        i += len(new_rules)
-
-    # Replace terminal symbols with proxy variables
-    terminals = G.terminals
-    variables = get_variables(productions)
-    proxy_rules = \
-        {t : ProductionRule(
-                SubscriptedNonterminal.next_unused(t.name.upper(), variables),
-                [t]
-             ) for t in terminals}
-    added = {t : False for t in terminals}
-    i = 0
-    while i < len(productions):
-        new_rule, replaced = replace_terminals(productions[i], proxy_rules)
-        productions[i] = new_rule
-        for t in replaced:
-            if not added[t]:
-                productions.append(proxy_rules[t])
-                added[t] = True
-        i += len(new_rules)
-
-    return ContextFreeGrammar(productions)

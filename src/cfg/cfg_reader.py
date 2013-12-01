@@ -1,3 +1,15 @@
+'''A module for parsing context free grammar specifications using an extended
+syntax. This extended syntax allows for symbols with labels longer than one
+character. Nonterminal names are written between angle brackets (<...>), and
+terminal names are written between double quotes ("...").
+
+Example:
+<Sentence> -> <Noun-phrase> <Verb-phrase> | <Sentence> <Prep-phrase>
+<Noun-phrase> -> "noun"
+<Noun-phrase> -> "det" "noun"
+etc.
+'''
+
 import re
 from slr import *
 from cfg import *
@@ -6,19 +18,13 @@ class CFGReaderError(Exception):
     pass
 
 class CFGReader(object):
-    '''A parser for the "extended" grammar syntax.
-
-Example:
-<S> -> <NP> <VP> | <S> <PP> | <S> "and" <S>
-<NP> -> "n"
-<NP> -> "det" "n"
-    '''
+    '''A parser for the "extended" grammar syntax.'''
 
     NONTERMINAL, TERMINAL, ARROW, PIPE, NEWLINE, ERROR, EOF = range(7)
 
-    # Read a grammar from a string in the extended syntax and return the
-    # grammar.
     def parse(self, s):
+        '''Read a grammar from a string in the extended syntax and return the
+        grammar.'''
         self.productions = []
         self.tokenizer = iter(self.tokens(s))
         self.next_token()

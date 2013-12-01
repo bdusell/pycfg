@@ -1,7 +1,7 @@
 '''Run Example 4.8 from Aho & Ullman p. 315-316, printing the steps to stdout.
 '''
 
-from cfg import aho_ullman, cfg
+from cfg import aho_ullman, cfg, cnf
 
 CFG = cfg.ContextFreeGrammar
 

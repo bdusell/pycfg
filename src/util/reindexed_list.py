@@ -48,5 +48,7 @@ class ReindexedList(list):
         if i < self._shift:
             raise IndexError('got index %d for list with starting index %d' % (i, self._shift))
 
+def Seq(x):
+    '''Turn a 0-indexed list into a 1-indexed one.'''
+    return ReindexedList(1, x)
 
-Seq = lambda x: ReindexedList(1, x)

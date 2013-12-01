@@ -1,4 +1,6 @@
-'''All algorithms in this file come from:
+'''A set of pedagogical CFG parsing algorithms.
+
+The algorithms in this module mainly come from:
 
     Aho, Alfred V., and Ullman, Jeffrey D. "The Theory of Parsing, Translation,
         and Compiling: Volume I: Parsing". Englewood Cliffs, NJ: Prentice-Hall,
@@ -8,7 +10,7 @@
 import sys
 from pprint import pprint
 
-import cfg
+import cfg, cnf
 from util.reindexed_list import Seq
 
 CFG = cfg.ContextFreeGrammar
@@ -122,6 +124,9 @@ def topdown_backtrack_parse(G, w, out=sys.stdout):
     assert isinstance(G, CFG) and not G.left_recursive()
     for ai in w:
         assert isinstance(ai, cfg.Terminal)
+
+    def write(s):
+        if out is not None: out.write(s)
 
     N = set(G.nonterminals)
     Sigma = set(G.terminals)
@@ -271,13 +276,13 @@ def topdown_backtrack_parse(G, w, out=sys.stdout):
     # configurations C0 |- C1 |- ... |- Ci |- ... until no further configurations
     # can be computed.
 
-    out.write(topdown_state_str(s, i, alpha, beta) + '\n')
+    write(topdown_state_str(s, i, alpha, beta) + '\n')
     while True:
         next_config = goes_to(s, i, alpha, beta)
         if next_config is None:
             break
         s, i, alpha, beta = next_config
-        out.write('|- ' + topdown_state_str(s, i, alpha, beta) + '\n')
+        write('|- ' + topdown_state_str(s, i, alpha, beta) + '\n')
 
     # Step 2: If the last computed configuration is (t, n + 1, gamma, e), emit
     # h(gamma) and halt. h(gamma) is the first found left parse. Otherwise, emit
@@ -323,6 +328,9 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
     for ai in a:
         assert ai in Sigma
 
+    def write(s):
+        if out is not None: out.write(s)
+
     # (1) Order the productions arbitrarily.
 
     # (2) We shall couch our algorithm in the 4-tuple configurations similar to
@@ -343,7 +351,7 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
     # (3) The initial configuration of the algorithm is (q, 1, $, e)
     s, i, alpha, beta = q, 1, [cfg.Marker('$')], []
 
-    out.write(bottomup_state_str(s, i, alpha, beta) + '\n')
+    write(bottomup_state_str(s, i, alpha, beta) + '\n')
 
     # (4) The algorithm itself is as follows. We begin by trying to apply step
     # 1.
@@ -378,7 +386,7 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
             nn = len(rr.right_side)
             alpha[-nn:] = [rr.left_side]
             beta = [rule_number] + beta
-            out.write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
+            write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
             continue
 
     # Step 2: Shift
@@ -393,7 +401,7 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
             alpha.append(a[i])
             beta = [shift] + beta
             i += 1
-            out.write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
+            write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
             continue
 
     # Step 3: Accept
@@ -406,7 +414,7 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
 
         if s == q and i == n + 1 and alpha == [cfg.Marker('$'), S]:
             s = t
-            out.write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
+            write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
             def h(ss):
                 return [sss for sss in ss if isinstance(sss, int)]
             return h(beta)
@@ -417,7 +425,7 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
 
         assert i == n + 1
         s = b
-        out.write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
+        write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
 
     # Step 5: Backtracking
     #   (a) (b, i, alpha A, j gamma) |- (q, i, alpha' B, k gamma)
@@ -457,22 +465,22 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
                         s = q
                         alpha = tempalpha[:-len(rr.right_side)] + [rr.left_side]
                         beta[0] = k
-                        out.write('|- ' + \
-                                  bottomup_state_str(s, i, alpha, beta) + '\n')
+                        write('|- ' + \
+                              bottomup_state_str(s, i, alpha, beta) + '\n')
                         break # to step 1
                     elif i == n + 1: # Condition (b)
                         alpha = tempalpha
                         del beta[0]
-                        out.write('|- ' + \
-                                  bottomup_state_str(s, i, alpha, beta) + '\n')
+                        write('|- ' + \
+                              bottomup_state_str(s, i, alpha, beta) + '\n')
                         continue # to step 5
                     else: # Condition (c)
                         s = q
                         alpha = tempalpha + [a[i]]
                         i += 1
                         beta[0] = shift
-                        out.write('|- ' + \
-                                  bottomup_state_str(s, i, alpha, beta) + '\n')
+                        write('|- ' + \
+                              bottomup_state_str(s, i, alpha, beta) + '\n')
                         break # to step 1
             elif s == b and len(alpha) > 0 and \
                  isinstance(alpha[-1], cfg.Terminal) and \
@@ -480,7 +488,7 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
                 i -= 1
                 alpha.pop()
                 del beta[0]
-                out.write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
+                write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
                 continue # to step 5
             raise ParseError('error')
         continue
@@ -531,7 +539,7 @@ def cocke_younger_kasami_algorithm(G, w, out=sys.stdout):
     and an input string w = a1 a2 ... an in Sigma+.
     Output: The parse table T for w such that tij contains A if and only if
     A =>+ ai ai+1 ... ai+j-1.'''
-    assert cfg.is_cnf(G) and not G.has_empty_rules()
+    assert cnf.is_cnf(G) and not G.has_empty_rules()
 
     Nu = set(G.nonterminals)
     Sigma = set(G.terminals)
@@ -546,7 +554,10 @@ def cocke_younger_kasami_algorithm(G, w, out=sys.stdout):
     T = ParseTable(n)
     t = Seq(map(Seq, T))
 
-    out.write(parse_table_str(T) + '\n\n')
+    def write(s):
+        if out is not None: out.write(s)
+
+    write(parse_table_str(T) + '\n\n')
 
     # (1) Set ti1 = {A | A -> ai is in P} for each i. After this step, if ti1
     # contains A, then clearly A =>+ ai.
@@ -555,7 +566,7 @@ def cocke_younger_kasami_algorithm(G, w, out=sys.stdout):
     # increment i by 1.
     for i in xrange(1, n+1):
         t[i][1] |= set([pp.left_side for pp in P if pp.right_side[0] == a[i]])
-        out.write(parse_table_str(T) + '\n\n')
+        write(parse_table_str(T) + '\n\n')
 
     # (2) Assume that tij' has been computed for all i, 1 <= i <= n, and all j',
     # 1 <= j' < j. Set
@@ -596,7 +607,7 @@ def cocke_younger_kasami_algorithm(G, w, out=sys.stdout):
                                 jjj >= 1 and \
                                 pp.right_side[0] in t[i][k] and \
                                 pp.right_side[1] in t[kk][jjj]])
-                out.write(
+                write(
                     parse_table_iterators_str(
                         T, [(i, j), (i, k), (kk, jjj)]
                     ) + '\n\n'
@@ -613,7 +624,7 @@ def left_parse_from_parse_table(G, w, T):
     productions of P are numbered from 1 to p, an input string w = a1 a2 ... an,
     and the parse table T for w constructed by the CYK algorithm.
     Output: A left parse for w or the signal "error."'''
-    assert cfg.is_cnf(G)
+    assert cnf.is_cnf(G)
 
     Nu = G.nonterminals
     Sigma = G.terminals
@@ -724,6 +735,9 @@ def earley_parse(G, w, out=sys.stdout):
     for ai in w:
         assert ai in Sigma
 
+    def write(s):
+        if out is not None: out.write(s)
+
     I = [[] for ii in xrange(n+1)]
 
     # First, we construct I0 as follows:
@@ -738,8 +752,7 @@ def earley_parse(G, w, out=sys.stdout):
     while added:
         added = False
 
-        if out:
-            out.write(parse_list_str(I, 0) + '\n\n')
+        write(parse_list_str(I, 0) + '\n\n')
         
     # (2) If [B -> gamma., 0] is on I0, add [A -> alpha B . beta, 0] for all
     # [A -> alpha . B beta, 0] on I0. (Note that gamma can be e. This is the
@@ -791,8 +804,7 @@ def earley_parse(G, w, out=sys.stdout):
         while added:
             added = False
 
-            if out:
-                out.write(parse_list_str(I, j) + '\n\n')
+            write(parse_list_str(I, j) + '\n\n')
 
     # (5) Let [A -> gamma ., i] be an item in Ij. Examine Ii for items of the
     # form [B -> alpha . A beta, k]. For each one found, we add

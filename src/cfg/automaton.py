@@ -1,4 +1,4 @@
-'''Finite state machines or automata.'''
+'''A module which models finite state machines/automata.'''
 
 from util.weighted_digraph import WeightedDigraph
 import util.dot

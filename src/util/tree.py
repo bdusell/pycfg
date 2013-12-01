@@ -24,7 +24,12 @@ def Tree(node_type):
             return str(self.value) + children
 
         def __repr__(self):
-            return '%s(%s, %s)' % (self.__class__.__name__, repr(self.value), repr(self.subtrees))
+            return '%s(%r, %r)' % (self.__class__.__name__, self.value, self.subtrees)
+
+        def __eq__(self, y):
+            return isinstance(y, self.__class__) and \
+                   self.value == y.value and \
+                   self.subtrees == y.subtrees
 
         def _dot_lines(self):
             return ['q%s [label="%s"]' % (id(self), escape(str(self.value)))] + \
