@@ -14,6 +14,6 @@ CFG specifications from stdin and can output all sorts of useful information
 about them (e.g. first and follow sets, SLR tables, LR(0) automaton diagrams)
 using pieces of this library. The command
 
-  ./pycfg
+    ./pycfg
   
 will output a help message with further instructions.
