@@ -94,6 +94,17 @@ def number_productions(G):
     '''Get the production rules of a grammar as a 1-indexed list.'''
     return Seq(G.productions)
 
+def _check_args(G, w):
+    if not isinstance(G, cfg.ContextFreeGrammar):
+        raise TypeError('grammar is not an instance of ContextFreeGrammar')
+    for ai in w:
+        if not isinstance(ai, cfg.Terminal):
+            raise TypeError('input symbol is not an instance of Terminal')
+    terminals = G.terminals
+    for ai in w:
+        if ai not in terminals:
+            raise ValueError('input terminal is not in the grammar\'s alphabet')
+
 def topdown_state_str(s, i, alpha, beta):
     '''Return a string representing a parser configuration state in the topdown
     backtrack parse algorithm.'''
@@ -121,11 +132,7 @@ def topdown_backtrack_parse(G, w, out=None):
     1, 2, ..., p.
     Output: One left parse for w if one exists. Raise a ParseError otherwise.
     '''
-    if not isinstance(G, CFG):
-       raise TypeError('grammar is not an instance of ContextFreeGrammar')
-    for ai in w:
-        if not isinstance(ai, cfg.Terminal):
-            raise TypeError('input symbol is not an instance of Terminal')
+    _check_args(G, w)
     if G.left_recursive():
        raise ValueError('grammar is left-recursive')
 
@@ -139,10 +146,6 @@ def topdown_backtrack_parse(G, w, out=None):
     a = Seq(w)
     n = len(w)
     p = len(P)
-
-    for ai in a:
-        if ai not in Sigma:
-            raise ValueError('input Terminal is not in grammar alphabet')
 
     # (1)
     # For each nonterminal A in Nu, order the alternates for A. Let Ai be the
@@ -318,11 +321,7 @@ def bottomup_backtrack_parse(G, w, out=None):
     n >= 1.
     Output: One right parse for w if one exists. The output "error" otherwise.
     '''
-    if not isinstance(G, CFG):
-        raise TypeError('grammar is not an instance of ContextFreeGrammar')
-    for ai in w:
-        if not isinstance(ai, cfg.Terminal):
-            raise TypeError('input symbol is not an instance of Terminal')
+    _check_args(G, w)
     if G.has_empty_rules():
         raise ValueError('grammar has empty rules')
     if G.cyclic():
@@ -335,10 +334,6 @@ def bottomup_backtrack_parse(G, w, out=None):
     a = Seq(w)
     n = len(w)
     p = len(P)
-
-    for ai in a:
-        if ai not in Sigma:
-            raise ValueError('input Terminal is not in grammar alphabet')
 
     def write(s):
         if out is not None: out.write(s)
@@ -542,13 +537,22 @@ def parse_table_iterators_str(T, coords):
             cell_strs[i][j] = '[%s]' % cell_strs[i][j]
     return _parse_table_cells_str(cell_strs)
 
-def cocke_younger_kasami_algorithm(G, w, out=sys.stdout):
+def _cyk_check_args(G, w, check):
+    _check_args(G, w)
+    if G.has_empty_rules():
+        raise ValueError('grammar has empty rules')
+    if check:
+        if not cnf.is_cnf(G):
+            raise ValueError('grammar is not in Chomsky normal form')
+
+def cocke_younger_kasami_algorithm(G, w, out=None, check=True):
     '''Cocke-Younger-Kasami parsing algorithm. (Aho & Ullman p. 315)
     Input: A Chomsky normal form CFG G = (Nu, Sigma, P, S) with no e-production
     and an input string w = a1 a2 ... an in Sigma+.
     Output: The parse table T for w such that tij contains A if and only if
     A =>+ ai ai+1 ... ai+j-1.'''
-    assert cnf.is_cnf(G) and not G.has_empty_rules()
+
+    _cyk_check_args(G, w, check)
 
     Nu = set(G.nonterminals)
     Sigma = set(G.terminals)
@@ -556,9 +560,6 @@ def cocke_younger_kasami_algorithm(G, w, out=sys.stdout):
     S = G.start
     a = Seq(w)
     n = len(a)
-
-    for ai in w:
-        assert ai in Sigma
 
     T = ParseTable(n)
     t = Seq(map(Seq, T))
@@ -627,13 +628,14 @@ def cocke_younger_kasami_algorithm(G, w, out=sys.stdout):
 
     return t
 
-def left_parse_from_parse_table(G, w, T):
+def left_parse_from_parse_table(G, w, T, check=True):
     '''Left parse from parse table. (Aho & Ullman p. 318-319)
     Input: A Chomsky normal form CFG G = (Nu, Sigma, P, S) in which the
     productions of P are numbered from 1 to p, an input string w = a1 a2 ... an,
     and the parse table T for w constructed by the CYK algorithm.
     Output: A left parse for w or the signal "error."'''
-    assert cnf.is_cnf(G)
+
+    _cyk_check_args(G, w, check)
 
     Nu = G.nonterminals
     Sigma = G.terminals
@@ -642,9 +644,6 @@ def left_parse_from_parse_table(G, w, T):
     a = Seq(w)
     n = len(a)
     t = T
-
-    for ai in w:
-        assert ai in Sigma
 
     # We shall describe a recursive routine gen(i, j, A) to generate a left
     # parse corresponding to the derivation A =>+lm ai ai+1 ... ai+j-1. The

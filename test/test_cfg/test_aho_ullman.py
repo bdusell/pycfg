@@ -190,6 +190,77 @@ F -> a
             with self.assertRaises(ParseError) as ar:
                 bottomup_backtrack_parse(G, map(Terminal, ww))
 
+    def test_cyk(self):
+
+        self._test_inputs(cocke_younger_kasami_algorithm)
+        with self.assertRaises(ValueError) as ar:
+            cocke_younger_kasami_algorithm(CFG('S -> AB\nA -> a\nB -> b\nA -> ABA'), map(Terminal, 'ab'))
+        with self.assertRaises(ValueError) as ar:
+            cocke_younger_kasami_algorithm(CFG('S -> a | '), map(Terminal, ''))
+        with self.assertRaises(ValueError) as ar:
+            cocke_younger_kasami_algorithm(CFG('S -> AA | AS | b\nA -> a'), map(Terminal, 'ab'))
+
+        # Example 4.8 from Aho & Ullman p. 315-316
+        G = CFG('''
+S -> AA | AS | b
+A -> SA | AS | a
+''')
+        w = map(cfg.Terminal, 'abaab')
+        expected_table = \
+            [[set([Nonterminal('A')]),
+              set([Nonterminal('A'), Nonterminal('S')]),
+              set([Nonterminal('A'), Nonterminal('S')]),
+              set([Nonterminal('A'), Nonterminal('S')]),
+              set([Nonterminal('A'), Nonterminal('S')])],
+             [set([Nonterminal('S')]),
+              set([Nonterminal('A')]),
+              set([Nonterminal('S')]),
+              set([Nonterminal('A'), Nonterminal('S')])],
+             [set([Nonterminal('A')]),
+              set([Nonterminal('S')]),
+              set([Nonterminal('A'), Nonterminal('S')])],
+             [set([Nonterminal('A')]), set([Nonterminal('A'), Nonterminal('S')])],
+             [set([Nonterminal('S')])]]
+        expected_parse = [2, 6, 2, 4, 3, 6, 2, 6, 3]
+        # S(A(a)S(A(S(b)A(a))S(A(a)S(b))))
+        S, A, a, b = map(Nonterminal, 'SA') + map(Terminal, 'ab')
+        expected_tree = ParseTree(S, [
+            ParseTree(A, [
+                ParseTree(a)
+            ]),
+            ParseTree(S, [
+                ParseTree(A, [
+                    ParseTree(S, [
+                        ParseTree(b)
+                    ]),
+                    ParseTree(A, [
+                        ParseTree(a)
+                    ])
+                ]),
+                ParseTree(S, [
+                    ParseTree(A, [
+                        ParseTree(a)
+                    ]),
+                    ParseTree(S, [
+                        ParseTree(b)
+                    ])
+                ])
+            ])
+        ])
+        out = PseudoStream()
+
+        result = cocke_younger_kasami_algorithm(G, w, out=out, check=False)
+        self.assertEqual(map(list, result), expected_table,
+            'CYK parse table is correct')
+
+        result_parse = left_parse_from_parse_table(G, w, result, check=False)
+        self.assertEqual(result_parse, expected_parse,
+            'Parse derived from parse table is correct')
+
+        result_tree = LeftParse(G, result_parse).tree()
+        self.assertEqual(result_tree, expected_tree,
+            'Parse tree is correct')
+
 if __name__ == '__main__':
     unittest.main()
 
