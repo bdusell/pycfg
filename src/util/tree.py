@@ -9,7 +9,8 @@ def Tree(node_type):
     class TreeClass(object):
         
         def __init__(self, value, subtrees=None):
-            assert isinstance(value, node_type)
+            if not isinstance(value, node_type):
+                raise TypeError('tree value is not an instance of %s' % node_type.__name__)
             if subtrees is None: subtrees = []
             for t in subtrees:
                 assert isinstance(t, self.__class__)

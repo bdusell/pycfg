@@ -15,7 +15,7 @@ from util.reindexed_list import Seq
 
 CFG = cfg.ContextFreeGrammar
 
-class ParseError(Exception):
+class ParseError(ValueError):
     '''An exception indicating an unseccessful parse of an input string.'''
     pass
 
@@ -114,16 +114,20 @@ def topdown_state_str(s, i, alpha, beta):
         beta_str = 'e'
     return '(%s, %s, %s, %s)' % (s, i, alpha_str, beta_str)
 
-def topdown_backtrack_parse(G, w, out=sys.stdout):
+def topdown_backtrack_parse(G, w, out=None):
     '''Top-down backtrack parsing (Aho & Ullman p. 289-291).
     Input: A non-left-recursive CFG G = (Nu, Sigma, P, S) and an input string
     w = a1 a2 ... an, n >= 0. We assume that the productions in P are numbered
     1, 2, ..., p.
     Output: One left parse for w if one exists. Raise a ParseError otherwise.
     '''
-    assert isinstance(G, CFG) and not G.left_recursive()
+    if not isinstance(G, CFG):
+       raise TypeError('grammar is not an instance of ContextFreeGrammar')
     for ai in w:
-        assert isinstance(ai, cfg.Terminal)
+        if not isinstance(ai, cfg.Terminal):
+            raise TypeError('input symbol is not an instance of Terminal')
+    if G.left_recursive():
+       raise ValueError('grammar is left-recursive')
 
     def write(s):
         if out is not None: out.write(s)
@@ -137,8 +141,9 @@ def topdown_backtrack_parse(G, w, out=sys.stdout):
     p = len(P)
 
     for ai in a:
-        assert ai in Sigma
-    
+        if ai not in Sigma:
+            raise ValueError('input Terminal is not in grammar alphabet')
+
     # (1)
     # For each nonterminal A in Nu, order the alternates for A. Let Ai be the
     # index for the ith alternate of A. For example, if
@@ -306,16 +311,22 @@ def bottomup_state_str(s, i, alpha, beta):
         beta_str = 'e'
     return '(%s, %s, %s, %s)' % (s, i, alpha_str, beta_str)
 
-def bottomup_backtrack_parse(G, w, out=sys.stdout):
+def bottomup_backtrack_parse(G, w, out=None):
     '''Bottom-up backtrack parsing (Aho & Ullman p. 303-304).
     Input: CFG G = (Nu, Sigma, P, S) with no cycles or e-productions, whose
     productions are numbered 1 to p, and an input string w = a1 a2 ... an,
     n >= 1.
     Output: One right parse for w if one exists. The output "error" otherwise.
     '''
-    assert isinstance(G, CFG) and not G.cyclic() and not G.has_empty_rules()
+    if not isinstance(G, CFG):
+        raise TypeError('grammar is not an instance of ContextFreeGrammar')
     for ai in w:
-        assert isinstance(ai, cfg.Terminal)
+        if not isinstance(ai, cfg.Terminal):
+            raise TypeError('input symbol is not an instance of Terminal')
+    if G.has_empty_rules():
+        raise ValueError('grammar has empty rules')
+    if G.cyclic():
+        raise ValueError('grammar is cyclic')
 
     N = set(G.nonterminals)
     Sigma = set(G.terminals)
@@ -326,7 +337,8 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
     p = len(P)
 
     for ai in a:
-        assert ai in Sigma
+        if ai not in Sigma:
+            raise ValueError('input Terminal is not in grammar alphabet')
 
     def write(s):
         if out is not None: out.write(s)
@@ -358,11 +370,8 @@ def bottomup_backtrack_parse(G, w, out=sys.stdout):
 
     def endswith(ss, ww):
         nn = len(ww)
-        #print '%s (%s)' % (ww, nn)
         if nn > len(ss):
-            #print '%s > %s' % (nn, len(ss))
             return False
-        #print '%s == %s ?' % (tuple(ss)[-nn:], tuple(ww))
         return tuple(ss)[-nn:] == tuple(ww)
 
     def firstsuffix(_alpha, start):

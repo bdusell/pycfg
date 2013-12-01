@@ -4,9 +4,6 @@ from pprint import pprint
 
 class TestCFG(unittest.TestCase):
 
-    def setUp(self):
-        pass
-
     def test_nonterminal(self):
 
         A = Nonterminal('A')
@@ -308,7 +305,7 @@ T -> T*F | F
 F -> (S) | a
 ''')
         self.assertEquals(G2.productions, rules,
-            'Production rules correctly')
+            'Production rules interpreted correctly')
         self.assertEquals(G2.nonterminals, set(nonterminals),
             'Nonterminals collected correctly')
         self.assertEquals(G2.terminals, set(terminals),

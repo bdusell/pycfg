@@ -2,6 +2,7 @@
 resulting parse tree to stdout.'''
 
 from cfg import aho_ullman, cfg
+import sys
 
 CFG = cfg.ContextFreeGrammar
 
@@ -16,7 +17,7 @@ F -> a
 w = [cfg.Terminal(a) for a in 'a*a']
 
 try:
-    parse = aho_ullman.bottomup_backtrack_parse(G, w)
+    parse = aho_ullman.bottomup_backtrack_parse(G, w, sys.stdout)
     tree = aho_ullman.RightParse(G, parse[::-1]).tree()
     assert list(tree.iter_leaves()) == w
     print tree
