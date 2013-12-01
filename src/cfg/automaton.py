@@ -18,12 +18,12 @@ class Automaton(WeightedDigraph):
     def has_transition(self, source, symbol):
         '''Test whether a state has an outgoing transition on a given symbol.
         '''
-        self.has_edge(source, symbol)
+        return self.has_edge(source, symbol)
 
     def next_state(self, source, symbol):
         '''Get the state to which a state has a transition on the given symbol.
         '''
-        self.get_edge(source, symbol)
+        return self.get_edge(source, symbol)
 
     def add_state(self, s):
         '''Add a state to the automaton.'''
@@ -31,7 +31,8 @@ class Automaton(WeightedDigraph):
 
     @property
     def states(self):
-        result = set()
+        '''A set containing all of the states in the automaton.'''
+        result = set(self._edges.keys())
         for qi, a, qj in self.transitions:
             result.add(qi)
             result.add(qj)
@@ -39,6 +40,9 @@ class Automaton(WeightedDigraph):
 
     @property
     def transitions(self):
+        '''A list of triples (s, X, t), where s is the source state, t is the
+        destination state, and X is the transition symbol of each transition in
+        the automaton.'''
         return self.edges
 
     def _dot_str(self, tostring, shape):
