@@ -662,7 +662,10 @@ def left_parse_from_parse_table(G, w, T, check=True):
             p = cfg.ProductionRule(A, [a[i]])
             if p in P:
                 return [P.index(p)]
+            else:
+                raise ParseError('error')
         elif j > 1:
+            m = None
             stop = False
             for k in xrange(1, j):
                 for B in t[i][k]:
@@ -676,6 +679,8 @@ def left_parse_from_parse_table(G, w, T, check=True):
                         break
                 if stop:
                     break
+            if m is None:
+                raise ParseError('error')
             return [m] + gen(i, k, B) + gen(i + k, j - k, C)
         return []
 

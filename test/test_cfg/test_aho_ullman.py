@@ -28,6 +28,20 @@ class TestAhoUllman(unittest.TestCase):
         with self.assertRaises(ValueError) as ar:
             func(CFG('A -> x'), map(Terminal, 'y'))
 
+    def _test_expr_input_strings(self, func, G):
+        self._test_input_strings(func, G,
+            'a a*a a+a*a a*a+a a+a+a'.split(),
+            [''] + '+ * aa a+a+ a+a*'.split()
+        )
+
+    def _test_input_strings(self, func, G, positive, negative):
+        for w in positive:
+            self.assertIsNot(func(G, map(Terminal, w)), None,
+                'Succeeds on input %r' % w)
+        for w in negative:
+            with self.assertRaises(ParseError) as ar:
+                func(G, map(Terminal, w))
+
     def test_topdown_backtrack_parse(self):
 
         self._test_inputs(topdown_backtrack_parse)
@@ -109,12 +123,7 @@ F -> a
         self.assertEqual(str(out), expected_output,
             'State transition output is correct')
 
-        for ww in 'a a*a a+a*a a*a+a a+a+a'.split():
-            self.assertIsNot(topdown_backtrack_parse(G, map(Terminal, ww)), None,
-                'Succeeds on input %r' % ww)
-        for ww in [''] + '+ * aa a+a+ a+a*'.split():
-            with self.assertRaises(ParseError) as ar:
-                topdown_backtrack_parse(G, map(Terminal, ww))
+        self._test_expr_input_strings(bottomup_backtrack_parse, G)
 
     def test_bottomup_backtrack_parse(self):
 
@@ -183,12 +192,7 @@ F -> a
         self.assertEqual(str(out), expected_output,
             'State transition output is correct')
 
-        for ww in 'a a*a a+a*a a*a+a a+a+a'.split():
-            self.assertIsNot(bottomup_backtrack_parse(G, map(Terminal, ww)), None,
-                'Succeeds on input %r' % ww)
-        for ww in [''] + '+ * aa a+a+ a+a*'.split():
-            with self.assertRaises(ParseError) as ar:
-                bottomup_backtrack_parse(G, map(Terminal, ww))
+        self._test_expr_input_strings(bottomup_backtrack_parse, G)
 
     def test_cyk(self):
 
@@ -249,17 +253,25 @@ A -> SA | AS | a
         ])
         out = PseudoStream()
 
-        result = cocke_younger_kasami_algorithm(G, w, out=out, check=False)
-        self.assertEqual(map(list, result), expected_table,
+        T = cocke_younger_kasami_algorithm(G, w, out=out, check=False)
+        self.assertEqual(map(list, T), expected_table,
             'CYK parse table is correct')
 
-        result_parse = left_parse_from_parse_table(G, w, result, check=False)
+        result_parse = left_parse_from_parse_table(G, w, T, check=False)
         self.assertEqual(result_parse, expected_parse,
             'Parse derived from parse table is correct')
 
         result_tree = LeftParse(G, result_parse).tree()
         self.assertEqual(result_tree, expected_tree,
             'Parse tree is correct')
+
+        def parse(G, w):
+            T = cocke_younger_kasami_algorithm(G, w, check=False)
+            return left_parse_from_parse_table(G, w, T, check=False)
+
+        self._test_input_strings(parse, G,
+            'b aa ab baa'.split(),
+            'a ba'.split())
 
     def test_earley_parse(self):
 
@@ -326,35 +338,6 @@ F -> a
   Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 1, 0),
   Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'),)), 1, 0)]]
         expected_parse = [6, 4, 6, 4, 2, 1, 5, 6, 4, 3, 2]
-        # E(
-        #   T(
-        #     F(
-        #       (
-        #       E(
-        #         T(
-        #           F(
-        #             a
-        #           )
-        #         )
-        #         +
-        #         E(
-        #           T(
-        #             F(
-        #               a
-        #             )
-        #           )
-        #         )
-        #       )
-        #       )
-        #     )
-        #     *
-        #     T(
-        #       F(
-        #         a
-        #       )
-        #     )
-        #   )
-        # )
         E, T, F, a, plus, mul, left, right = map(Nonterminal, 'ETF') + map(Terminal, 'a+*()')
         expected_tree = ParseTree(E, [
             ParseTree(T, [
@@ -399,6 +382,15 @@ F -> a
         result_tree = RightParse(G, result_parse).tree()
         self.assertEqual(result_tree, expected_tree,
             'Parse tree is correct')
+
+        def parse(G, w):
+            I = earley_parse(G, w)
+            return right_parse_from_parse_lists(G, w, I)
+
+        self._test_expr_input_strings(parse, G)
+        self._test_input_strings(parse, G,
+            '(a) a*(a+a) a+(a*a) (((((a)))))'.split(),
+            '() (a)) a+() (((((a)))) (((((a))))))'.split())
 
 if __name__ == '__main__':
     unittest.main()
