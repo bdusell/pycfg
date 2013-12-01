@@ -261,8 +261,145 @@ A -> SA | AS | a
         self.assertEqual(result_tree, expected_tree,
             'Parse tree is correct')
 
+    def test_earley_parse(self):
+
+        self._test_inputs(earley_parse)
+
+        # Example 4.10 from Aho & Ullman p. 321-322
+        G = CFG('''
+E -> T+E
+E -> T
+T -> F*T
+T -> F
+F -> (E)
+F -> a
+''')
+        w = map(cfg.Terminal, '(a+a)*a')
+        expected_lists = \
+[[Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 0, 0),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'),)), 0, 0),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 0, 0),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'),)), 0, 0),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('('), Nonterminal('E'), Terminal(')'))), 0, 0),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('a'),)), 0, 0)],
+ [Item(ProductionRule(Nonterminal('F'), (Terminal('('), Nonterminal('E'), Terminal(')'))), 1, 0),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 0, 1),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'),)), 0, 1),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 0, 1),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'),)), 0, 1),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('('), Nonterminal('E'), Terminal(')'))), 0, 1),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('a'),)), 0, 1)],
+ [Item(ProductionRule(Nonterminal('F'), (Terminal('a'),)), 1, 1),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 1, 1),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'),)), 1, 1),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 1, 1),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'),)), 1, 1),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('('), Nonterminal('E'), Terminal(')'))), 2, 0)],
+ [Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 2, 1),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 0, 3),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'),)), 0, 3),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 0, 3),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'),)), 0, 3),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('('), Nonterminal('E'), Terminal(')'))), 0, 3),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('a'),)), 0, 3)],
+ [Item(ProductionRule(Nonterminal('F'), (Terminal('a'),)), 1, 3),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 1, 3),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'),)), 1, 3),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 1, 3),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'),)), 1, 3),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 3, 1),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('('), Nonterminal('E'), Terminal(')'))), 2, 0)],
+ [Item(ProductionRule(Nonterminal('F'), (Terminal('('), Nonterminal('E'), Terminal(')'))), 3, 0),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 1, 0),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'),)), 1, 0),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 1, 0),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'),)), 1, 0)],
+ [Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 2, 0),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 0, 6),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'),)), 0, 6),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('('), Nonterminal('E'), Terminal(')'))), 0, 6),
+  Item(ProductionRule(Nonterminal('F'), (Terminal('a'),)), 0, 6)],
+ [Item(ProductionRule(Nonterminal('F'), (Terminal('a'),)), 1, 6),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 1, 6),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'),)), 1, 6),
+  Item(ProductionRule(Nonterminal('T'), (Nonterminal('F'), Terminal('*'), Nonterminal('T'))), 3, 0),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 1, 0),
+  Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'),)), 1, 0)]]
+        expected_parse = [6, 4, 6, 4, 2, 1, 5, 6, 4, 3, 2]
+        # E(
+        #   T(
+        #     F(
+        #       (
+        #       E(
+        #         T(
+        #           F(
+        #             a
+        #           )
+        #         )
+        #         +
+        #         E(
+        #           T(
+        #             F(
+        #               a
+        #             )
+        #           )
+        #         )
+        #       )
+        #       )
+        #     )
+        #     *
+        #     T(
+        #       F(
+        #         a
+        #       )
+        #     )
+        #   )
+        # )
+        E, T, F, a, plus, mul, left, right = map(Nonterminal, 'ETF') + map(Terminal, 'a+*()')
+        expected_tree = ParseTree(E, [
+            ParseTree(T, [
+                ParseTree(F, [
+                    ParseTree(left),
+                    ParseTree(E, [
+                        ParseTree(T, [
+                            ParseTree(F, [
+                                ParseTree(a)
+                            ])
+                        ]),
+                        ParseTree(plus),
+                        ParseTree(E, [
+                            ParseTree(T, [
+                                ParseTree(F, [
+                                    ParseTree(a)
+                                ])
+                            ])
+                        ])
+                    ]),
+                    ParseTree(right)
+                ]),
+                ParseTree(mul),
+                ParseTree(T, [
+                    ParseTree(F, [
+                        ParseTree(a)
+                    ])
+                ])
+            ])
+        ])
+        out = PseudoStream()
+
+        I = earley_parse(G, w, out=out)
+
+        self.assertEqual(I, expected_lists,
+            'Parse lists are correct')
+
+        result_parse = right_parse_from_parse_lists(G, w, I)
+        self.assertEqual(result_parse, expected_parse,
+            'Parse constructed from parse lists is correct')
+
+        result_tree = RightParse(G, result_parse).tree()
+        self.assertEqual(result_tree, expected_tree,
+            'Parse tree is correct')
+
 if __name__ == '__main__':
     unittest.main()
-
-
 

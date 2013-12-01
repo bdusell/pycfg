@@ -22,6 +22,14 @@ class Symbol(Comparable, Keyed):
         '''Return the symbol's name or identifier.'''
         return self._identifier
 
+    def is_nonterminal(self):
+        '''Tell whether this is a nonterminal symbol.'''
+        raise NotImplementedError()
+
+    def is_terminal(self):
+        '''Tell whether this is a terminal symbol.'''
+        raise NotImplementedError()
+
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self._identifier)
 

@@ -707,6 +707,9 @@ class Item(object):
         return '[%s -> %s, %s]' % (self.production.left_side, sep.join(strs),
                                    self.i)
 
+    def __repr__(self):
+        return 'Item(%r, %r, %r)' % (self.production, self.k, self.i)
+
     def __eq__(self, y):
         return isinstance(y, Item) and self.production == y.production and \
                self.k == y.k and self.i == y.i
@@ -726,12 +729,13 @@ def parse_list_str(I, j):
     '''
     return '\n'.join(['I%s' % j] + map(str, I[j]))
 
-def earley_parse(G, w, out=sys.stdout):
+def earley_parse(G, w, out=None):
     '''Earley's parsing algorithm. (Aho & Ullman p. 321)
     Input: CFG G = (Nu, Sigma, P, S) and an input string w = a1 a2 ... an in
     Sigma*.
     Output: The parse lists I0, I1, ..., In.'''
-    assert isinstance(G, cfg.ContextFreeGrammar)
+
+    _check_args(G, w)
     
     Nu = G.nonterminals
     Sigma = G.terminals
@@ -739,9 +743,6 @@ def earley_parse(G, w, out=sys.stdout):
     S = G.start
     a = Seq(w)
     n = len(a)
-
-    for ai in w:
-        assert ai in Sigma
 
     def write(s):
         if out is not None: out.write(s)
@@ -786,7 +787,7 @@ def earley_parse(G, w, out=sys.stdout):
         new_items = []
         for item in I[0]:
             B = item.after_dot()
-            if isinstance(B, cfg.Nonterminal):
+            if B is not None and B.is_nonterminal():
                 for production in P:
                     if production.left_side == B:
                         new_item = Item(production, 0, 0)
@@ -839,7 +840,7 @@ def earley_parse(G, w, out=sys.stdout):
             new_items = []
             for item in I[j]:
                 B = item.after_dot()
-                if isinstance(B, cfg.Nonterminal):
+                if B is not None and B.is_nonterminal():
                     for production in P:
                         if production.left_side == B:
                             new_item = Item(production, 0, j)
@@ -856,16 +857,17 @@ def earley_parse(G, w, out=sys.stdout):
 
     return I
 
-def right_parse_from_parse_lists(G, w, I):
+def right_parse_from_parse_lists(G, w, I, out=None):
     '''Construction of a right parse from the parse lists. (Aho & Ullman p. 328)
     Input: A cycle-free CFG G = (Nu, Sigma, P, S) with the productions in P
     numbered from 1 to p, an input string w = a1 ... an, and the parse lists
     I0, I1, ..., In for w.
     Output: pi, a right parse for w, or an "error" message.'''
 
-    assert isinstance(G, cfg.ContextFreeGrammar)
-    assert not G.cyclic()
-    
+    _check_args(G, w)
+    if G.cyclic():
+        raise ValueError('grammar is cyclic')
+
     Nu = G.nonterminals
     Sigma = G.terminals
     P = Seq(G.productions)
@@ -873,8 +875,8 @@ def right_parse_from_parse_lists(G, w, I):
     a = Seq(w)
     n = len(a)
 
-    for ai in w:
-        assert ai in Sigma
+    def write(s):
+        if out is not None: out.write(s)
 
     # If no item of the form [S -> alpha ., 0] is on In, then w is not in L(G),
     # so emit "error" and halt. Otherwise, initialize the parse pi to e and
@@ -883,7 +885,7 @@ def right_parse_from_parse_lists(G, w, I):
 
     # Routine R([A -> beta ., i], j):
     def R(item, j):
-        print 'R(%s, %s)' % (item, j)
+        write('R(%s, %s)' % (item, j))
         assert item.m == item.k
         A = item.production.left_side
         beta = item.production.right_side
@@ -928,5 +930,5 @@ def right_parse_from_parse_lists(G, w, I):
            _item.i == 0:
             pi = []
             R(_item, n)
-            return RightParse(G, pi)
+            return pi
     raise ParseError('error')

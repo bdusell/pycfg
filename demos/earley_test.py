@@ -21,4 +21,5 @@ for j in xrange(len(I)):
     print aho_ullman.parse_list_str(I, j)
     print
 
-print aho_ullman.right_parse_from_parse_lists(G, w, I).tree()
+parse = aho_ullman.right_parse_from_parse_lists(G, w, I)
+print aho_ullman.RightParse(G, parse).tree()
