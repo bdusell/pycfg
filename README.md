@@ -17,3 +17,9 @@ using pieces of this library. The command
     ./pycfg
   
 will output a help message with further instructions.
+
+The command
+
+    ./run_tests
+
+will run all unit tests, which should pass.
