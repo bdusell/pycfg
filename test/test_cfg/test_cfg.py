@@ -366,6 +366,14 @@ E -> DD
         #self.assertTrue(G6.cyclic(),
         #    'Hidden and chained cyclicity')
 
+        G7 = ContextFreeGrammar('''\
+A -> B -> C
+B -> b
+C -> c
+''')
+        self.assertEqual(G7.terminals, set(map(Terminal, ' ->bc')))
+        self.assertEqual(G7.nonterminals, set(map(Nonterminal, 'ABC')))
+
 if __name__ == '__main__':
     unittest.main()
 

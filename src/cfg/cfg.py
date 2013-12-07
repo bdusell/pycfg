@@ -318,7 +318,7 @@ class ContextFreeGrammar(object):
 
     def _init_string(self, string):
         lines = filter(None, string.split('\n'))
-        split_sides = [[w.strip() for w in line.split('->')] for line in lines]
+        split_sides = [[w.strip() for w in line.split('->', 1)] for line in lines]
         for left, right in split_sides:
             if not (len(left) == 1 and left.isupper()):
                 raise ValueError('"%s" is not valid on the left side of a production rule')

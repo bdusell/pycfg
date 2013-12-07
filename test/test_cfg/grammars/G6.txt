@@ -1,0 +1,11 @@
+# G6, a non-cyclic grammar which cannot be handled by Tomita's basic GLR
+# algorithm and has unbounded ambiguity.
+# A CFG G has unbounded ambiguity if for each i >= 1, there exists a sentence
+# in L(G) which has at least i distinct derivation trees.
+# Source: GLR Parsing for \epsilon-Grammers, Rahman Nozohoor-Farshi
+S -> MN
+M -> AMb
+M -> x
+N -> bNA
+N -> x
+A ->

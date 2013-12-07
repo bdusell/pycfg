@@ -1,0 +1,9 @@
+# G7, a grammar which would be parsed more efficiently with a bottom-up
+# rightmost approach.
+# Source: GLR Parsing for \epsilon-Grammers, Rahman Nozohoor-Farshi
+S -> aSa
+S -> BSb
+S -> CSc
+B -> a
+C -> a
+S -> x

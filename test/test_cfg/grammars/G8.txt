@@ -1,0 +1,47 @@
+# G8, a grammar which generates an interesting parse graph before any input is
+# read.
+# Source: GLR Parsing for \epsilon-Grammers, Rahman Nozohoor-Farshi
+S -> x
+S -> BSb
+S -> ASb
+B -> AA
+A ->
+==TABLE==
+0,x=sh2,re5
+0,A=4
+0,B=3
+0,S=1
+1,$=acc
+2,b=re1
+2,$=re1
+3,x=sh2,re5
+3,A=4
+3,B=3
+3,S=5
+4,x=sh2,re5
+4,A=6
+4,B=3
+4,S=7
+5,b=sh8
+6,x=sh2,re4,re5
+6,A=6
+6,B=3
+6,S=7
+7,b=sh9
+8,b=re2
+8,$=re2
+9,b=re3
+9,$=re3
+# U0 (the parse graph consisting of nodes created just before the first input
+# symbol is read):
+#                         A
+#                        ( )
+# 0 <-- A <-- 4 <-- A <-- 6
+#/|\         |/|\        /|\
+# |         \|/|          |
+# |          A B          |
+# |          |/|\         |
+# |         \|/|          |
+# \____ B <-- 3 --> B ____/
+#            ( )
+#             B

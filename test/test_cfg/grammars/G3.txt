@@ -1,0 +1,19 @@
+# G3, a non-cyclic grammar which cannot be handled by Tomita's basic GLR
+# algorithm and is unambiguous. It is not LR(k).
+# Source: GLR Parsing for \epsilon-Grammers, Rahman Nozohoor-Farshi
+S -> ASb
+S -> x
+A ->
+==TABLE==
+0,x=re3,sh3
+0,A=2
+0,S=1
+1,$=acc
+2,x=re3,sh3
+2,A=2
+2,S=4
+3,b=re2
+3,$=re2
+4,b=sh5
+5,b=re1
+5,$=re1

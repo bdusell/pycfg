@@ -17,8 +17,10 @@ class Item(object):
     '''An LR(0) item.'''
 
     def __init__(self, production, dot_pos):
-        assert isinstance(production, cfg.ProductionRule)
-        assert dot_pos <= len(production.right_side)
+        if not isinstance(production, cfg.ProductionRule):
+            raise TypeError('production is not an instance of ProductionRule')
+        if not (0 <= dot_pos <= len(production.right_side)):
+            raise ValueError('dot position not within bounds')
         self.production = production
         self.dot_pos = dot_pos
 

@@ -1,0 +1,32 @@
+# G5, a non-cyclic grammar which cannot be handled by Tomita's basic GLR
+# algorithm and has bounded direct ambiguity of degree 2, in spite of being
+# unboundedly ambiguous.
+# The degree of direct ambiguity of a non-terminal A with respect to a string
+# x is the number of distinct tuples (p, x1, x2, ... , xn), where p is a
+# production A -> B1 B2 ... Bn, and x1 x2 ... xn is a factorization of x such
+# that Bi =>* xi for 1 <= n.
+# A CFG G has bounded direct ambiguity of degree k if the degree of direct
+# ambiguity of any of its non-terminals with respect to any string is at most
+# k.
+# Source: GLR Parsing for \epsilon-Grammers, Rahman Nozohoor-Farshi
+S -> ASb
+S -> x
+A -> t
+A ->
+==TABLE==
+0,t=sh4,re4
+0,x=sh3,re4
+0,A=2
+0,S=1
+1,$=acc
+2,t=sh4,re4
+2,x=sh3,re4
+2,A=2
+2,S=5
+3,b=re2
+3,$=re2
+4,t=re3
+4,x=re3
+5,b=sh6
+6,b=re1
+6,$=re1

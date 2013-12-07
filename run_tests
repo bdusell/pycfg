@@ -1,0 +1,3 @@
+#!/bin/bash
+cd src && export PYTHONPATH=$(pwd) && \
+find ../test -type f -name 'test_*.py' -exec python '{}' ';'

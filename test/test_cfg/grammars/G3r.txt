@@ -1,0 +1,18 @@
+# G3r, the reverse of G3, where a null-deriving consituent appears on the right
+# side of a recursive construct.
+# Source: GLR Parsing for \epsilon-Grammers, Rahman Nozohoor-Farshi
+S -> bSA
+S -> x
+A ->
+==TABLE==
+0,x=sh3
+0,b=sh2
+0,S=1
+1,$=acc
+2,x=sh3
+2,b=sh2
+2,S=4
+3,$=re2
+4,$=re3
+4,A=5
+5,$=re1

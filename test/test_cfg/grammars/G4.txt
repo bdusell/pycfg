@@ -1,0 +1,12 @@
+# G4, a non-cyclic grammar which cannot be handled by Tomita's basic GLR
+# algorithm and has bounded ambiguity of degree 2.
+# A CFG G has bounded ambiguity of degree k if each sentence in L(G) has at
+# most k distinct derivation trees.
+# Source: GLR Parsing for \epsilon-Grammers, Rahman Nozohoor-Farshi
+S -> M
+S -> N
+M -> AMb
+M -> x
+N -> ANb
+N -> x
+A ->

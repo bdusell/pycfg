@@ -1,0 +1,11 @@
+==GRAMMAR==
+S -> a
+S -> b
+==TABLEA==
+0,a=re1
+1,$=acc
+==TABLEB==
+0,a=re1
+1,$=acc
+==RESULT==
+true

@@ -1,0 +1,5 @@
+# G1, a cyclic grammar
+# Source: GLR Parsing for \epsilon-Grammers, Rahman Nozohoor-Farshi
+S -> A
+A -> S
+A -> x

@@ -1,0 +1,5 @@
+# G2, a cyclic grammar
+# Source: GLR Parsing for \epsilon-Grammers, Rahman Nozohoor-Farshi
+S -> SS
+S -> x
+S ->

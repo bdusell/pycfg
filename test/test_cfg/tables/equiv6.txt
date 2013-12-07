@@ -1,0 +1,25 @@
+==GRAMMAR==
+S -> a
+S -> b
+S -> A
+A -> a
+==TABLEA==
+0,a=sh2
+0,b=sh2
+0,A=2
+1,$=acc
+2,a=sh1
+2,b=re1
+2,A=3
+3,a=re1,re2
+==TABLEB==
+0,a=sh3
+0,b=sh3
+0,A=3
+1,$=acc
+2,a=re1
+3,a=sh1
+3,b=re1
+3,A=2
+==RESULT==
+false
