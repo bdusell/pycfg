@@ -169,7 +169,7 @@ class ParseTableNormalForm(object):
 
     def __init__(self):
         '''Initialize an empty table.'''
-        self._reductions = {} # { int : { Terminal : [ProductionRule] } }
+        self._reductions = {} # { int : { Terminal : [int] } }
         self._gotoshifts = {} # { int : { Symbol : int } }
         self._accepts = {} # { int : set(int) }
         self._terminals = set()
@@ -194,6 +194,8 @@ class ParseTableNormalForm(object):
         return self._accepts
 
     def add_reduction(self, state, terminal, production):
+        if not isinstance(production, int):
+            raise TypeError('production should be an int')
         self.reductions.setdefault(state, {}).setdefault(terminal, []).append(production)
         self._add_symbol(terminal)
 

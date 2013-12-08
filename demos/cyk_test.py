@@ -13,8 +13,18 @@ A -> SA | AS | a
 
 w = map(cfg.Terminal, 'abaab')
 
+print 'G:'
+print G
+print
+print 'w =', ''.join(map(str, w))
+print
+
 T = aho_ullman.cocke_younger_kasami_algorithm(G, w, out=sys.stdout, check=False)
+print 'T:'
 print aho_ullman.parse_table_str(T)
+print
 parse = aho_ullman.left_parse_from_parse_table(G, w, T, check=False)
 tree = aho_ullman.LeftParse(G, parse).tree()
-print tree
+
+print 'Parse tree:', tree
+

@@ -11,5 +11,9 @@ A -> B | S
 B -> b |
 ''')
 
+print '<h1><var>G</var>:</h1>'
+print G.html()
+print
+print '<h1><var>G&prime;</var>:</h1>'
 print CNF(G).html()
 

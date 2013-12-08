@@ -158,7 +158,7 @@ class Terminal(Symbol):
         return True
 
     def html(self):
-        return '<code>%s</code>' % cgi.escape(self.name)
+        return '<code>%s</code>' % (cgi.escape(self.name)) if self.name else '&ldquo;&rdquo;'
 
     def dot_html(self):
         return '<b>%s</b>' % cgi.escape(self.name)

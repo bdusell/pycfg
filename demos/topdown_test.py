@@ -16,8 +16,15 @@ F -> a
 
 w = [cfg.Terminal(a) for a in 'a+a']
 
+print 'G:'
+print G
+print
+print 'w =', ''.join(map(str, w))
+print
+
 try:
     parse = aho_ullman.topdown_backtrack_parse(G, w, sys.stdout)
-    print aho_ullman.LeftParse(G, parse).tree()
+    print
+    print 'Parse tree:', aho_ullman.LeftParse(G, parse).tree()
 except aho_ullman.ParseError, e:
     print e

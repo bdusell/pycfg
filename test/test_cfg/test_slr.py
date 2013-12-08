@@ -1,6 +1,7 @@
 from cfg.slr import *
 from cfg.cfg import *
 import unittest
+from test_table import grammar_test_cases
 
 class TestSLR(unittest.TestCase):
 
@@ -26,6 +27,11 @@ class TestSLR(unittest.TestCase):
         self.assertEqual(Item(p, 2).dot_advanced(), Item(p, 3))
         self.assertEqual(len(set([Item(p, 0), Item(p, 1), Item(p, 0)])), 2)
         self.assertEqual(len(set([Item(p, 0), Item(p2, 0), Item(p, 2)])), 3)
+
+    def test_table(self):
+        for test in filter(lambda x: x.table is not None, grammar_test_cases):
+            actual_table = ParsingTable(test.grammar).to_normal_form()
+            self.assertTrue(actual_table.equivalent(test.table))
 
 if __name__ == '__main__':
     unittest.main()

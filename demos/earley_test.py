@@ -16,6 +16,12 @@ F -> a
 
 w = map(cfg.Terminal, '(a+a)*a')
 
+print 'G:'
+print G
+print
+print 'w =', ''.join(map(str, w))
+print
+
 I = aho_ullman.earley_parse(G, w, out=None)
 for j in xrange(len(I)):
     print aho_ullman.parse_list_str(I, j)

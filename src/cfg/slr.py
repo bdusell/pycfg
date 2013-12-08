@@ -10,6 +10,7 @@ import util.html
 import cfg
 import automaton
 from cfg import ContextFreeGrammar as CFG
+from table import ParseTableNormalForm
 
 END_MARKER = cfg.Marker('$')
 
@@ -541,4 +542,21 @@ class ParsingTable(object):
                [self._action_set_html(i, a) for a in self.terminals()] + \
                [self._goto_html(i, A) for A in self.nonterminals()]])) \
            for i, Ii in self._closure_states()]))
+
+    def to_normal_form(self):
+        result = ParseTableNormalForm()
+        for s, row in enumerate(self._action):
+            for a, cell in row.iteritems():
+                for subcell in cell:
+                    action = subcell[0]
+                    if action == self.SHIFT:
+                        result.set_gotoshift(s, a, subcell[1])
+                    elif action == self.REDUCE:
+                        result.add_reduction(s, a, subcell[1])
+                    elif action == self.ACCEPT:
+                        result.set_accept(s, a)
+        for s, row in enumerate(self._goto):
+            for A, t in row.iteritems():
+                result.set_gotoshift(s, A, t)
+        return result
 

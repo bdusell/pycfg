@@ -8,8 +8,8 @@ def is_cnf_rule(r, start):
     '''Return whether a production rule is in CNF. Must indicate the grammar's
     start variable.'''
     rs = r.right_side
-    return (len(rs) == 1 and isinstance(rs[0], Terminal)) or \
-           (len(rs) == 2 and all(map(lambda x: isinstance(x, Nonterminal) and \
+    return (len(rs) == 1 and rs[0].is_terminal()) or \
+           (len(rs) == 2 and all(map(lambda x: x.is_nonterminal() and \
                                      x != start, rs))) or \
            (r.left_side == start and not rs)
 

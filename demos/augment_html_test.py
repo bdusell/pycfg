@@ -10,5 +10,8 @@ T -> T*F | F
 F -> (E) | a
 ''')
 
+print '<h1><var>G</var>:</h1>'
+print G.html()
+print '<h1><var>G&prime;</var>:</h1>'
 print cfg.slr.augmented(G).html()
 

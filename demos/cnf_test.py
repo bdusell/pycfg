@@ -11,4 +11,8 @@ A -> B | S
 B -> b |
 ''')
 
+print 'G:'
+print G
+print
+print 'G\':'
 print CNF(G)
