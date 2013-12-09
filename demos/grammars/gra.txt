@@ -1,0 +1,4 @@
+S -> NV | SP | SaS
+N -> n | dn | NP | NaN
+V -> vN | vS
+P -> pN

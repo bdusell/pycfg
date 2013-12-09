@@ -7,15 +7,25 @@ def Tree(node_type):
     that are instances of a particular type.'''
     
     class TreeClass(object):
-        
+
         def __init__(self, value, subtrees=None):
             if not isinstance(value, node_type):
                 raise TypeError('tree value is not an instance of %s' % node_type.__name__)
             if subtrees is None: subtrees = []
             for t in subtrees:
                 assert isinstance(t, self.__class__)
-            self.value = value
-            self.subtrees = tuple(subtrees)
+            self._value = value
+            self._subtrees = tuple(subtrees)
+
+        @property
+        def value(self):
+            '''Return the value stored at this node.'''
+            return self._value
+
+        @property
+        def subtrees(self):
+            '''Return the subtrees under this node.'''
+            return self._subtrees
 
         def __str__(self):
             if self.subtrees:
@@ -41,8 +51,7 @@ def Tree(node_type):
             return '''\
 digraph {
 	%s
-}
-''' % ';\n\t'.join(self._dot_lines())
+}''' % ';\n\t'.join(['graph [ordering="out"]'] + self._dot_lines())
 
         def iter_leaves(self):
             if not self.subtrees:

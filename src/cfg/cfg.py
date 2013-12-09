@@ -247,7 +247,11 @@ class ProductionRule(object):
 
 class ParseTree(Tree(Symbol)):
     '''A class for parse trees or syntax trees.'''
-    pass
+
+    @property
+    def symbol(self):
+        '''Return the symbol object at this node.'''
+        return self.value
 
 class ContextFreeGrammar(object):
 
