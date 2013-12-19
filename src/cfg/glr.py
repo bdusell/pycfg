@@ -13,10 +13,13 @@ class InputNotRecognized(Exception):
 
 def enumerate_trees(v):
     '''Given a vertex from a packed shared parse forest, enumerate all of the
-    parse trees encoded therein.'''
+    parse trees encoded therein. Cyclic parses are encoded as cyclic trees.'''
+    return _enumerate_trees(v, {})
+
+def _enumerate_trees(v, seen):
     if v.children:
         for child_set in v.children:
-            for alt in alternations(map(lambda x: list(enumerate_trees(x)), child_set)):
+            for alt in alternations(map(lambda x: list(_enumerate_trees(x, seen)), child_set)):
                 yield ParseTree(v.symbol, alt)
     else:
         yield ParseTree(v.symbol)

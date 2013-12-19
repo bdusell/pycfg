@@ -20,7 +20,7 @@ class CFGReaderError(Exception):
 class CFGReader(object):
     '''A parser for the "extended" grammar syntax.'''
 
-    NONTERMINAL, TERMINAL, ARROW, PIPE, NEWLINE, ERROR, EOF = range(7)
+    NONTERMINAL, TERMINAL, ARROW, PIPE, NEWLINE, WHITESPACE, ERROR, EOF = range(8)
 
     def parse(self, s):
         '''Read a grammar from a string in the extended syntax and return the
@@ -78,7 +78,7 @@ class CFGReader(object):
 
     def read(self, token):
         if not self.try_read(token):
-            raise CFGReaderError('expected different token, got %s' % self.value)
+            raise CFGReaderError('unexpected token %r' % self.value)
 
     def try_rule(self):
         if self.token == CFGReader.NONTERMINAL:
@@ -87,10 +87,10 @@ class CFGReader(object):
         return False
 
     def tokens(self, s):
-        tokenizer = re.compile(r'(\<[^>]*\>)|(\"[^"]*\")|(\-\>)|(\|)|(\n)', re.M)
+        tokenizer = re.compile(r'(\<[^>]*\>)|(\"[^"]*\")|(\-\>)|(\|)|(\n)|(\s+)|(.)', re.M)
         for token_tuple in tokenizer.findall(s):
             for i, v in enumerate(token_tuple):
-                if v:
+                if v and i != self.WHITESPACE:
                     yield i, v
                     break
         yield CFGReader.EOF, None

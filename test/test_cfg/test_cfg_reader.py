@@ -34,8 +34,40 @@ class TestCfgReader(unittest.TestCase):
 
         self.assertEqual(GRA.productions, GRA_expected_rules)
 
-        with self.assertRaises(Exception) as ar:
+        with self.assertRaises(CFGReaderError) as ar:
             reader.parse('foobar')
+
+        with self.assertRaises(ValueError) as ar:
+            reader.parse('')
+
+        with self.assertRaises(CFGReaderError) as ar:
+            reader.parse('<sentence> := <noun phrase> <verb phrase>')
+
+        with self.assertRaises(CFGReaderError) as ar:
+            reader.parse('<sentence> <noun phrase> <verb phrase>')
+
+        with self.assertRaises(CFGReaderError) as ar:
+            reader.parse('-> <noun phrase> <verb phrase>')
+
+        with self.assertRaises(CFGReaderError) as ar:
+            reader.parse('<sentence> <noun phrase> -> <verb phrase>')
+
+        with self.assertRaises(CFGReaderError) as ar:
+            reader.parse('<sentence> <noun phrase> <verb phrase> ->')
+
+        with self.assertRaises(CFGReaderError) as ar:
+            reader.parse('<sentence> -> <noun phrase> -> <verb phrase>')
+
+        with self.assertRaises(CFGReaderError) as ar:
+            reader.parse('<sentence> | <noun phrase> <verb phrase>')
+
+        self.assertEqual(
+            reader.parse('<Sentence> -> ').productions,
+            [ProductionRule(S, [])])
+
+        self.assertEqual(
+            reader.parse('<Sentence> -> <Noun phrase> |').productions,
+            [ProductionRule(S, [NP]), ProductionRule(S, [])])
 
 if __name__ == '__main__':
     unittest.main()
