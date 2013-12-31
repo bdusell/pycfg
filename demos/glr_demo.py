@@ -1,5 +1,5 @@
 import sys
-from cfg.cfg import *
+from cfg.core import *
 from cfg.glr import *
 from subprocutils import show_dot
 

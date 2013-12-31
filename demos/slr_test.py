@@ -2,7 +2,7 @@
 diagram of it in dot code to stdout.'''
 
 from cfg.slr import *
-from cfg.cfg import *
+from cfg.core import *
 
 CFG = ContextFreeGrammar
 

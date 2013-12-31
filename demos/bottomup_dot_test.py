@@ -1,9 +1,9 @@
 '''Run the bottom-up backtrack parsing algorithm from Aho & Ullman on a sample
 input and print a diagram of the parse tree in dot code to stdout.'''
 
-from cfg import aho_ullman, cfg
+from cfg import aho_ullman, core
 
-CFG = cfg.ContextFreeGrammar
+CFG = core.ContextFreeGrammar
 
 G = CFG('''
 E -> E+T
@@ -13,7 +13,7 @@ T -> F
 F -> a
 ''')
 
-w = map(cfg.Terminal, 'a*a')
+w = map(core.Terminal, 'a*a')
 
 class NullOutput:
     def write(self, x):

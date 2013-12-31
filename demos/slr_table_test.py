@@ -3,7 +3,7 @@ grammar, augmented grammar, first sets, follow sets, and parsing table in HTML
 to stdout.'''
 
 from cfg.slr import *
-from cfg.cfg import *
+from cfg.core import *
 
 CFG = ContextFreeGrammar
 

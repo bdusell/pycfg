@@ -88,5 +88,6 @@ References
   and Compiling: Volume I: Parsing*. Englewood Cliffs, NJ: Prentice-Hall,
   Inc. 1972.
 * Tomita, Masaru (Ed.). *Generalized LR Parsing*. Boston, MA: Kluwer Academic
-  Publishers 1991.
+  Publishers. 1991.
+* The Dragon Book.
 

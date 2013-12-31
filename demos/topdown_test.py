@@ -2,9 +2,9 @@
 '''
 
 import sys
-from cfg import aho_ullman, cfg
+from cfg import aho_ullman, core
 
-CFG = cfg.ContextFreeGrammar
+CFG = core.ContextFreeGrammar
 
 G = CFG('''
 E -> T+E
@@ -14,7 +14,7 @@ T -> F
 F -> a
 ''')
 
-w = [cfg.Terminal(a) for a in 'a+a']
+w = [core.Terminal(a) for a in 'a+a']
 
 print 'G:'
 print G

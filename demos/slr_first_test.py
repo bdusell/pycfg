@@ -1,7 +1,7 @@
 '''Compute the first set for a grammar and print it in HTML to stdout.'''
 
 from cfg.slr import *
-from cfg.cfg import *
+from cfg.core import *
 
 CFG = ContextFreeGrammar
 

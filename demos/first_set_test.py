@@ -2,7 +2,7 @@
 steps to stdout in HTML.'''
 
 import copy
-from cfg.cfg import *
+from cfg.core import *
 from util.html import *
 
 CFG = ContextFreeGrammar

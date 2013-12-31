@@ -1,9 +1,9 @@
 '''Run Example 4.10 from Aho & Ullman p. 321-322, printing the steps to stdout.
 '''
 
-from cfg import aho_ullman, cfg
+from cfg import aho_ullman, core
 
-CFG = cfg.ContextFreeGrammar
+CFG = core.ContextFreeGrammar
 
 G = CFG('''
 E -> T+E
@@ -14,7 +14,7 @@ F -> (E)
 F -> a
 ''')
 
-w = map(cfg.Terminal, '(a+a)*a')
+w = map(core.Terminal, '(a+a)*a')
 
 print 'G:'
 print G

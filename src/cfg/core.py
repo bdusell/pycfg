@@ -337,9 +337,12 @@ class ContextFreeGrammar(object):
     def _init_string(self, string):
         lines = filter(None, string.split('\n'))
         split_sides = [[w.strip() for w in line.split('->', 1)] for line in lines]
-        for left, right in split_sides:
+        for split_rule in split_sides:
+            if len(split_rule) != 2:
+                raise ValueError('line is not formatted as a rule')
+            left, right = split_rule
             if not (len(left) == 1 and left.isupper()):
-                raise ValueError('"%s" is not valid on the left side of a production rule')
+                raise ValueError('%r is not valid on the left side of a production rule' % left)
         self._extra_nonterminals = set()
         self._extra_terminals = set()
         self._productions = []

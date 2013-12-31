@@ -1,8 +1,8 @@
 '''Convert a grammar to CNF and print it to stdout.'''
 
-from cfg import cfg, cnf
+from cfg import core, cnf
 
-CFG = cfg.ContextFreeGrammar
+CFG = core.ContextFreeGrammar
 CNF = cnf.ChomskyNormalForm
 
 G = CFG('''

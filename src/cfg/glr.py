@@ -4,7 +4,7 @@ from itertools import chain
 from util.mixin import Keyed, Comparable
 from util.moreitertools import alternations
 from cfg.core import ParseTree
-from cfg.table import get_slr_table, END_MARKER
+from cfg.table import build_slr_table, END_MARKER
 
 class InputNotRecognized(Exception):
     '''An exception indicating that the input string to a parsing algorithm is
@@ -152,7 +152,7 @@ def parse(grammar, input_string):
     CFG used; however, cyclic grammars may cause an infinite loop during the
     parse tree enumeration process. A future implementation will instead encode
     such cyclicities as cycles in the parse tree data structure.'''
-    for v in glr_parse(get_slr_table(grammar), input_string):
+    for v in glr_parse(build_slr_table(grammar), input_string):
         for t in enumerate_trees(v):
             yield t
 

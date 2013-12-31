@@ -1,7 +1,7 @@
 '''Compute the first and follow sets of a grammar and print them to stdout.'''
 
 import copy
-from cfg.cfg import *
+from cfg.core import *
 from cfg.slr import *
 
 CFG = ContextFreeGrammar

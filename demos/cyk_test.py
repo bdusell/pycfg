@@ -1,17 +1,17 @@
 '''Run Example 4.8 from Aho & Ullman p. 315-316, printing the steps to stdout.
 '''
 
-from cfg import aho_ullman, cfg
+from cfg import aho_ullman, core
 import sys
 
-CFG = cfg.ContextFreeGrammar
+CFG = core.ContextFreeGrammar
 
 G = CFG('''
 S -> AA | AS | b
 A -> SA | AS | a
 ''')
 
-w = map(cfg.Terminal, 'abaab')
+w = map(core.Terminal, 'abaab')
 
 print 'G:'
 print G

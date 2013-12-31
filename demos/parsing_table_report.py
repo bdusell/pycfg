@@ -4,11 +4,11 @@ sets, and table to stdout in HTML.'''
 
 import sys
 from cfg.cfg_reader import *
+from cfg.slr import *
 
-reader = CFGReader()
 try:
-    G = reader.parse(sys.stdin.read())
-except CFGReaderError, e:
+    G = parse_cfg(sys.stdin.read())
+except ValueError, e:
     print e
     sys.exit(1)
 

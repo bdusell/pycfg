@@ -1,6 +1,6 @@
 '''Make sure Terminal and Nonterminal objects are sorted correctly.'''
 
-from cfg.cfg import *
+from cfg.core import *
 from util.html import *
 
 T = map(Terminal, 'ABCDEF')

@@ -1,6 +1,6 @@
 '''Print various things as HTML to stdout.'''
 
-from cfg.cfg import *
+from cfg.core import *
 
 things_to_print = [
     Nonterminal('A'),

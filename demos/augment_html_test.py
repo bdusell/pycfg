@@ -1,8 +1,8 @@
 '''Augment a grammar and print it as HTML to stdout.'''
 
-import cfg.cfg, cfg.slr
+import cfg.core, cfg.slr
 
-CFG = cfg.cfg.ContextFreeGrammar
+CFG = cfg.core.ContextFreeGrammar
 
 G = CFG('''
 E -> E+T | T
