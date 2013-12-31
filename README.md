@@ -52,16 +52,16 @@ the use of the library.
 Demo
 ----
 
-The demos/ directory has a number of driver programs demonstrating the use
+The `demos/` directory has a number of driver programs demonstrating the use
 of various parts of the library. For example, the command
 
     cd src; python ../demos/glr_demo.py ../demos/grammars/gra.txt
 
 will bring up a prompt for input symbols to be parsed with respect to the
-ambiguous grammar described in demos/grammars/gra.txt, and then generate
+ambiguous grammar described in `demos/grammars/gra.txt`, and then generate
 and display images of the resulting parse trees. In this case the input
 alphabet consists of the characters 'n' for noun, 'd' for determiner, 'v'
-for Vendetta... I mean verb, and 'p' for preposition. To run the example
+for verb, and 'p' for preposition. To run the example
 on an ambiguous sentence with six valid parse trees, enter the following
 characters at the prompt and then press Ctrl-C, as shown below:
 
