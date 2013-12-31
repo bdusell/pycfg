@@ -1,5 +1,5 @@
 from cfg.cfg_reader import *
-from cfg.cfg import *
+from cfg.core import *
 import unittest
 
 class TestCfgReader(unittest.TestCase):
@@ -24,13 +24,14 @@ class TestCfgReader(unittest.TestCase):
             (PP, [p, NP])
         ])
 
-        GRA = reader.parse('''\
+        GRA_text = '''\
 <Sentence> -> <Noun phrase> <Verb phrase> | <Sentence> <Prep phrase>
 <Sentence> -> <Sentence> "and" <Sentence>
 <Noun phrase> -> "noun" | "det" "noun" | <Noun phrase> <Prep phrase> | <Noun phrase> "and" <Noun phrase>
 <Verb phrase> -> "verb" <Noun phrase> | "verb" <Sentence>
 <Prep phrase> -> "prep" <Noun phrase>
-''')
+'''
+        GRA = reader.parse(GRA_text)
 
         self.assertEqual(GRA.productions, GRA_expected_rules)
 
@@ -68,6 +69,24 @@ class TestCfgReader(unittest.TestCase):
         self.assertEqual(
             reader.parse('<Sentence> -> <Noun phrase> |').productions,
             [ProductionRule(S, [NP]), ProductionRule(S, [])])
+
+        self.assertEqual(
+            parse_cfg(GRA_text).productions,
+            GRA.productions)
+
+        normal_text = '''\
+S -> S+S | S*S | x
+'''
+        self.assertEqual(
+            parse_cfg(normal_text).productions,
+            ContextFreeGrammar(normal_text).productions)
+
+        with self.assertRaises(ValueError) as ar:
+            parse_cfg('foobar')
+        with self.assertRaises(ValueError) as ar:
+            parse_cfg('a -> b')
+        with self.assertRaises(ValueError) as ar:
+            parse_cfg('"the" -> <det>')
 
 if __name__ == '__main__':
     unittest.main()

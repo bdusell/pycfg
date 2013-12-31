@@ -1,5 +1,5 @@
 from cfg.slr import *
-from cfg.cfg import *
+from cfg.core import *
 import unittest
 from test_table import grammar_test_cases
 

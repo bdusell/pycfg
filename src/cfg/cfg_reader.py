@@ -11,8 +11,7 @@ etc.
 '''
 
 import re
-from slr import *
-from cfg import *
+from cfg.core import Terminal, Nonterminal, ContextFreeGrammar, ProductionRule
 
 class CFGReaderError(Exception):
     pass
@@ -99,4 +98,14 @@ class CFGReader(object):
         result = (self.token, self.value) = next(self.tokenizer)
         return result
 
+def parse_cfg(s):
+    '''Parse a string into a ContextFreeGrammar, accepting either the extended
+    or the standard syntax.'''
+    try:
+        return ContextFreeGrammar(s)
+    except ValueError:
+        try:
+            return CFGReader().parse(s)
+        except CFGReaderError:
+            raise ValueError('unable to parse string into ContextFreeGrammar')
 

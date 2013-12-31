@@ -26,7 +26,7 @@ class TestTable(unittest.TestCase):
         for test in grammar_test_cases:
             if test.table is not None:
                 expected_table = test.table
-                actual_table = get_slr_table(test.grammar).to_normal_form()
+                actual_table = build_slr_table(test.grammar).to_normal_form()
                 self.assertTrue(actual_table.equivalent(expected_table))
 
 if __name__ == '__main__':

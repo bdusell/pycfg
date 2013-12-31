@@ -1,7 +1,7 @@
 '''Algorithms for converting grammars to Chomsky Normal Form.'''
 
-from cfg import ContextFreeGrammar, Terminal, Nonterminal, ProductionRule, \
-                SubscriptedNonterminal
+from cfg.core import ContextFreeGrammar, Terminal, Nonterminal, \
+                     ProductionRule, SubscriptedNonterminal
 from util.moreitertools import powerset
 
 def is_cnf_rule(r, start):

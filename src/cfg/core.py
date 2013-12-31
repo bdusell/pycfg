@@ -1,10 +1,9 @@
-'''A Context Free Grammar class along with peripheral classes and algorithms.
-'''
+'''A Context Free Grammar class along with peripheral classes, data structures,
+and algorithms.'''
 
 import itertools
 import cgi
 
-from util.digraph import Digraph
 from util.tree import Tree
 from util.mixin import Comparable, Keyed, Subscripted, Primed
 
@@ -36,8 +35,9 @@ class Symbol(Comparable, Keyed):
     def __eq__(self, y):
         '''Symbols must be of the same class and have the same identifier to be
         considered equal.'''
-        return self.__class__ == y.__class__ and \
-               self._identifier == y._identifier
+        return (
+            self.__class__ == y.__class__ and
+            self._identifier == y._identifier)
 
     def __key__(self):
         return (self.sort_num(), self.name)
@@ -221,9 +221,10 @@ class ProductionRule(object):
 
     def __eq__(self, o):
         '''Tests if the left and right side are equal.'''
-        return isinstance(o, ProductionRule) and \
-               self.left_side == o.left_side and \
-               self.right_side == o.right_side
+        return (
+            isinstance(o, ProductionRule) and
+            self.left_side == o.left_side and
+            self.right_side == o.right_side)
 
     def __hash__(self):
         return hash((self.left_side, self.right_side))
@@ -315,6 +316,19 @@ class ContextFreeGrammar(object):
     def symbols(self):
         '''Return a list of the grammar's nonterminals and terminals.'''
         return self.nonterminals | self.terminals
+
+    def productions_with_left_side(self, left_side):
+        '''Return all production rules in the grammar with a certain
+        symbol on the left side.'''
+        return filter(lambda x: x.left_side == left_side, self.productions)
+
+    def production_dict(self):
+        '''Return a mapping of variables to the sentences they produce, in
+        order.'''
+        result = {n : [] for n in self.nonterminals}
+        for p in self.productions:
+            result[p.left_side].append(p.right_side)
+        return result
 
     def _get_symbols_of_type(self, T):
         return set(s for p in self._productions for s in p.right_side \
@@ -410,42 +424,4 @@ class ContextFreeGrammar(object):
 
     def dot_html(self):
         return self._html(lambda x: x.dot_html())
-
-    def production_dict(self):
-        '''Return a mapping of variables to the sentences they produce, in
-        order.'''
-        result = {n : [] for n in self.nonterminals}
-        for p in self.productions:
-            result[p.left_side].append(p.right_side)
-        return result
-
-    def productions_with_left_side(self, left_side):
-        '''Return all production rules in the grammar with a certain
-        symbol on the left side.'''
-        return filter(lambda x: x.left_side == left_side, self.productions)
-
-    def left_recursive(self):
-        '''Return whether a grammar is left-recursive. FIXME: Does not detect
-        hidden left recursion.'''
-        return self._detect_cycle(lambda right_side: len(right_side) >= 1)
-
-    def has_empty_rules(self):
-        '''Return whether a grammar has e-productions.'''
-        for rule in self.productions:
-            if not rule.right_side:
-                return True
-        return False
-
-    def cyclic(self):
-        '''Return whether a grammar has a cycle. FIXME: Does not detect hidden
-        cycles.'''
-        return self._detect_cycle(lambda right_side: len(right_side) == 1)
-
-    def _detect_cycle(self, condition):
-        G = Digraph()
-        for rule in self.productions:
-            if condition(rule.right_side) and \
-               isinstance(rule.right_side[0], Nonterminal):
-                G.add_edge(rule.left_side, rule.right_side[0])
-        return G.cyclic()
 

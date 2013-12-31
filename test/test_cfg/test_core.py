@@ -1,4 +1,4 @@
-from cfg.cfg import *
+from cfg.core import *
 import unittest
 from pprint import pprint
 
@@ -292,8 +292,6 @@ class TestCFG(unittest.TestCase):
             G1.productions_with_left_side(Nonterminal('S')),
             rules[0:2],
             'Get rules with S on left side')
-        self.assertFalse(G1.has_empty_rules(),
-            'Grammar has no e-rules')
 
         with self.assertRaises(ValueError) as ar:
             ContextFreeGrammar([])
@@ -330,42 +328,6 @@ F -> a
         self.assertEquals(G22.productions, rules,
             'Rules with same left side can be on different lines')
 
-        G3 = ContextFreeGrammar('''\
-A -> B
-B -> B
-''')
-        G4 = ContextFreeGrammar('''\
-A -> B
-B -> C
-C -> D
-D -> E
-E -> F
-F -> B
-''')
-        G5 = ContextFreeGrammar('''\
-A -> B
-B -> CBD
-C ->
-D ->
-''')
-        G6 = ContextFreeGrammar('''\
-A -> B
-B -> CDE
-C -> FF
-D -> FF
-F -> B |
-E -> DD
-''')
-
-        self.assertTrue(G3.cyclic(),
-            'Obvious cyclicity')
-        self.assertTrue(G4.cyclic(),
-            'Chained cyclicity')
-        #self.assertTrue(G5.cyclic(),
-        #    'Hidden cyclicity')
-        #self.assertTrue(G6.cyclic(),
-        #    'Hidden and chained cyclicity')
-
         G7 = ContextFreeGrammar('''\
 A -> B -> C
 B -> b
@@ -373,6 +335,13 @@ C -> c
 ''')
         self.assertEqual(G7.terminals, set(map(Terminal, ' ->bc')))
         self.assertEqual(G7.nonterminals, set(map(Nonterminal, 'ABC')))
+
+        with self.assertRaises(ValueError) as ar:
+            ContextFreeGrammar('foobar')
+        with self.assertRaises(ValueError) as ar:
+            ContextFreeGrammar('<noun phrase> -> <det> <noun>')
+        with self.assertRaises(ValueError) as ar:
+            ContextFreeGrammar('a -> b')
 
 if __name__ == '__main__':
     unittest.main()

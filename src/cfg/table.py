@@ -2,7 +2,7 @@
 
 import sys
 from collections import deque
-from cfg import ContextFreeGrammar as CFG, Marker
+from core import ContextFreeGrammar as CFG, Marker
 
 END_MARKER = Marker('$')
 
@@ -297,7 +297,7 @@ class ParseTableNormalForm(object):
         states = sorted(m.keys())
         return map(str, symbols), [(str(i), [','.join(map(str, m[i][X])) for X in symbols]) for i in states]
 
-def build_slr_table(G, follow):
+def _build_slr_table(G, follow):
     '''Construct an SLR table for a grammar. Its follow sets must be provided.
     '''
     table = ParseTable(G)
@@ -352,8 +352,10 @@ def build_slr_table(G, follow):
         PROCESS(s)
     return table
 
-def get_slr_table(G):
+def build_slr_table(G, follow=None):
     '''Compute the SLR table for a grammar, computing first and follow sets as
-    needed so they do not need to be provided.'''
-    return build_slr_table(G, follow_sets(G, *first_sets(G)))
+    needed in case the follow sets are not provided.'''
+    if follow is None:
+        follow = follow_sets(G, *first_sets(G))
+    return _build_slr_table(G, follow)
 

@@ -3,8 +3,8 @@ from collections import deque
 from itertools import chain
 from util.mixin import Keyed, Comparable
 from util.moreitertools import alternations
-from cfg import ParseTree
-from table import get_slr_table, END_MARKER
+from grammar.cfg import ParseTree
+from grammar.table import get_slr_table, END_MARKER
 
 class InputNotRecognized(Exception):
     '''An exception indicating that the input string to a parsing algorithm is

@@ -3,7 +3,7 @@
 import re
 import sys
 from pprint import pprint
-from cfg.cfg import ContextFreeGrammar, Terminal, Nonterminal, Marker
+from cfg.core import ContextFreeGrammar, Terminal, Nonterminal, Marker
 from cfg.table import END_MARKER, ParseTableNormalForm
 
 class GrammarTestCase(object):

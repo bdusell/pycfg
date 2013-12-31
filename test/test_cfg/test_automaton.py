@@ -1,5 +1,5 @@
 from cfg.automaton import *
-from cfg.cfg import *
+from cfg.core import *
 import unittest
 
 class TestAutomaton(unittest.TestCase):

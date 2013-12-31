@@ -7,18 +7,18 @@ import cgi
 
 import util.html
 
-import cfg
+from core import ContextFreeGrammar, Terminal, Nonterminal, Marker, Epsilon, \
+                 ProductionRule, PrimedNonterminal
 import automaton
-from cfg import ContextFreeGrammar as CFG
 from table import ParseTableNormalForm
 
-END_MARKER = cfg.Marker('$')
+END_MARKER = Marker('$')
 
 class Item(object):
     '''An LR(0) item.'''
 
     def __init__(self, production, dot_pos):
-        if not isinstance(production, cfg.ProductionRule):
+        if not isinstance(production, ProductionRule):
             raise TypeError('production is not an instance of ProductionRule')
         if not (0 <= dot_pos <= len(production.right_side)):
             raise ValueError('dot position not within bounds')
@@ -68,7 +68,7 @@ class Item(object):
 def is_augmented(grammar):
     '''Check if a grammar's start symbol appears at most once on the left side
     of a production rule and never appears on the right side.'''
-    assert isinstance(grammar, cfg.ContextFreeGrammar)
+    assert isinstance(grammar, ContextFreeGrammar)
     return len(filter(lambda x: x.left_side == grammar.start, grammar.productions)) <= 1 \
            and not any(filter(lambda x: grammar.start in x.right_side, grammar.productions))
 
@@ -77,23 +77,23 @@ def augmented(grammar):
     if is_augmented(grammar):
         return grammar
     else:
-        S0 = cfg.PrimedNonterminal.next_unused(grammar.start.name, grammar.nonterminals)
+        S0 = PrimedNonterminal.next_unused(grammar.start.name, grammar.nonterminals)
         N = [S0] + list(grammar.nonterminals)
         T = grammar.terminals
-        P = [cfg.ProductionRule(S0, [grammar.start])] + grammar.productions
-        return cfg.ContextFreeGrammar(N, T, P, S0)
+        P = [ProductionRule(S0, [grammar.start])] + grammar.productions
+        return ContextFreeGrammar(N, T, P, S0)
 
 def closure(item, grammar):
     '''Compute the closure of a single item.'''
     assert isinstance(item, Item)
-    assert isinstance(grammar, cfg.ContextFreeGrammar)
+    assert isinstance(grammar, ContextFreeGrammar)
     result = [item]
     seen = set()
     i = 0
     while i < len(result):
         source_item = result[i]
         A = source_item.after_dot()
-        if isinstance(A, cfg.Nonterminal) and A not in seen:
+        if isinstance(A, Nonterminal) and A not in seen:
             result.extend(
                 filter(lambda x: x not in result,
                        map(lambda x: Item(x, 0), grammar.productions_with_left_side(A))))
@@ -126,7 +126,7 @@ class Closure(object):
         # Get the nonterminals to the right of a dot in the kernel items.
         for item in self.kernel_items:
             X = item.after_dot()
-            if isinstance(X, cfg.Nonterminal) and X not in result:
+            if isinstance(X, Nonterminal) and X not in result:
                 result.append(X)
 
         # For every nonterminal found, include any nonterminals which appear
@@ -136,7 +136,7 @@ class Closure(object):
             for p in self.grammar.productions_with_left_side(result[i]):
                 if len(p.right_side) > 0:
                     X = p.right_side[0]
-                    if isinstance(X, cfg.Nonterminal) and X not in result:
+                    if isinstance(X, Nonterminal) and X not in result:
                         result.append(X)
             i += 1
 
@@ -200,7 +200,7 @@ class Automaton(automaton.Automaton):
 
     def __init__(self, grammar):
 
-        assert isinstance(grammar, cfg.ContextFreeGrammar)
+        assert isinstance(grammar, ContextFreeGrammar)
         super(automaton.Automaton, self).__init__()
 
         # Construct initial closure item
@@ -301,7 +301,7 @@ class FirstSetTable(object):
                     if Xi in self.grammar.nonterminals:
                         self.table[A][0] |= self.table[Xi][0]
                         if not self.table[Xi][1]:
-                            next_rules.append(cfg.ProductionRule(A, p.right_side[i:]))
+                            next_rules.append(ProductionRule(A, p.right_side[i:]))
                             break
                     else:
                         self.table[A][0].add(Xi)
@@ -319,7 +319,7 @@ class FirstSetTable(object):
   %s
 </table>
 ''' % '\n  '.join(['<tr><th>%s</th><td>%s</td></tr>' % \
-                   (X.html(), util.html.html_set(sorted(T) + ([cfg.Epsilon()] if e else []))) \
+                   (X.html(), util.html.html_set(sorted(T) + ([Epsilon()] if e else []))) \
                    for X, (T, e) in sorted(self.table.items())])
 
 class FollowSetTable(object):
@@ -345,7 +345,7 @@ class FollowSetTable(object):
             for p in self.grammar.productions:
                 A = p.left_side
                 for i, B in enumerate(p.right_side):
-                    if isinstance(B, cfg.Nonterminal):
+                    if isinstance(B, Nonterminal):
                         Bfirst, Bempty = self.first_sets.string_first(p.right_side[i+1:])
                         self.table[B] |= Bfirst
                         if Bempty:
@@ -402,7 +402,7 @@ class ParsingTable(object):
 
         # Take care of the GOTO table and all of the shift actions.        
         for i, X, j in M.transitions:
-            if isinstance(X, cfg.Terminal):
+            if isinstance(X, Terminal):
                 self._add_action(i, X, (ParsingTable.SHIFT, j))
             else:
                 self._goto[i][X] = j

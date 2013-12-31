@@ -10,10 +10,13 @@ The algorithms in this module mainly come from:
 import sys
 from pprint import pprint
 
-import cfg, cnf
+from core import ContextFreeGrammar, Terminal, Nonterminal, Marker, \
+                 ProductionRule, ParseTree
+from cnf import is_cnf
+from classify import is_cyclic, is_left_recursive, has_empty_rules
 from util.reindexed_list import Seq
 
-CFG = cfg.ContextFreeGrammar
+CFG = ContextFreeGrammar
 
 class ParseError(ValueError):
     '''An exception indicating an unseccessful parse of an input string.'''
@@ -60,13 +63,13 @@ class LeftParse(Parse):
         i += 1
         children = []
         for c in rule.right_side:
-            if isinstance(c, cfg.Nonterminal):
+            if isinstance(c, Nonterminal):
                 tree, i = self._tree(i)
                 assert tree.value == c
                 children.append(tree)
             else:
-                children.append(cfg.ParseTree(c))
-        return cfg.ParseTree(rule.left_side, children), i
+                children.append(ParseTree(c))
+        return ParseTree(rule.left_side, children), i
 
 class RightParse(Parse):
     '''A right-most derivation.'''
@@ -82,23 +85,23 @@ class RightParse(Parse):
         i -= 1
         children = []
         for c in reversed(rule.right_side):
-            if isinstance(c, cfg.Nonterminal):
+            if isinstance(c, Nonterminal):
                 tree, i = self._tree(i)
                 assert tree.value == c
                 children = [tree] + children
             else:
-                children = [cfg.ParseTree(c)] + children
-        return cfg.ParseTree(rule.left_side, children), i
+                children = [ParseTree(c)] + children
+        return ParseTree(rule.left_side, children), i
 
 def number_productions(G):
     '''Get the production rules of a grammar as a 1-indexed list.'''
     return Seq(G.productions)
 
 def _check_args(G, w):
-    if not isinstance(G, cfg.ContextFreeGrammar):
+    if not isinstance(G, ContextFreeGrammar):
         raise TypeError('grammar is not an instance of ContextFreeGrammar')
     for ai in w:
-        if not isinstance(ai, cfg.Terminal):
+        if not isinstance(ai, Terminal):
             raise TypeError('input symbol is not an instance of Terminal')
     terminals = G.terminals
     for ai in w:
@@ -133,7 +136,7 @@ def topdown_backtrack_parse(G, w, out=None):
     Output: One left parse for w if one exists. Raise a ParseError otherwise.
     '''
     _check_args(G, w)
-    if G.left_recursive():
+    if is_left_recursive(G):
        raise ValueError('grammar is left-recursive')
 
     def write(s):
@@ -175,7 +178,7 @@ def topdown_backtrack_parse(G, w, out=None):
     # algorithm will be in one of three states q, b, or t; q denotes normal
     # operation, b denotes backtracking, and t is the terminating state.
 
-    a.append(cfg.Marker('$'))
+    a.append(Marker('$'))
     q, b, t = 'qbt'
 
     # (3)
@@ -183,7 +186,7 @@ def topdown_backtrack_parse(G, w, out=None):
     s = q
     i = 1
     alpha = []
-    beta = [S, cfg.Marker('$')]
+    beta = [S, Marker('$')]
 
     # (4)
     # There are six types of steps. These steps will be described in terms of
@@ -238,15 +241,15 @@ def topdown_backtrack_parse(G, w, out=None):
     def goes_to(_s, _i, _alpha, _beta):
         # Successful conclusion
         if _s == q and _i == n + 1 and len(_beta) == 1 and \
-           _beta[0] == cfg.Marker('$'):
+           _beta[0] == Marker('$'):
             return t, _i, _alpha, []
         # Tree expansion
-        if _s == q and len(_beta) > 0 and isinstance(_beta[0], cfg.Nonterminal):
+        if _s == q and len(_beta) > 0 and isinstance(_beta[0], Nonterminal):
             return q, _i, _alpha + [(_beta[0], 1)], \
                    list(I[_beta[0]][1]) + beta[1:]
         # Testing match of input symbol
         if _s == q and len(_beta) > 0 and \
-           isinstance(_beta[0], cfg.Terminal):
+           isinstance(_beta[0], Terminal):
             # Successful match
             if _i <= n and _beta[0] == a[_i]:
                 return q, _i + 1, _alpha + [_beta[0]], _beta[1:]
@@ -254,7 +257,7 @@ def topdown_backtrack_parse(G, w, out=None):
             else:
                 return b, _i, _alpha, _beta
         # Backtracking on input
-        if _s == b and len(_alpha) > 0 and isinstance(_alpha[-1], cfg.Terminal):
+        if _s == b and len(_alpha) > 0 and isinstance(_alpha[-1], Terminal):
             return b, _i - 1, _alpha[:-1], [_alpha[-1]] + _beta
         # Try next alternate
         if _s == b and len(_alpha) > 0:
@@ -275,8 +278,8 @@ def topdown_backtrack_parse(G, w, out=None):
                     return b, _i, _alpha[:-1], [_A] + _beta[len(_gammaj):]
 
     def h(ss):
-        return [P.index(cfg.ProductionRule(c[0], I[c[0]][c[1]])) \
-                for c in ss if not isinstance(c, cfg.Terminal)]
+        return [P.index(ProductionRule(c[0], I[c[0]][c[1]])) \
+                for c in ss if not isinstance(c, Terminal)]
 
     # The execution of the program is as follows.
 
@@ -322,9 +325,9 @@ def bottomup_backtrack_parse(G, w, out=None):
     Output: One right parse for w if one exists. The output "error" otherwise.
     '''
     _check_args(G, w)
-    if G.has_empty_rules():
+    if has_empty_rules(G):
         raise ValueError('grammar has empty rules')
-    if G.cyclic():
+    if is_cyclic(G):
         raise ValueError('grammar is cyclic')
 
     N = set(G.nonterminals)
@@ -356,7 +359,7 @@ def bottomup_backtrack_parse(G, w, out=None):
     q, b, t = 'qbt'
 
     # (3) The initial configuration of the algorithm is (q, 1, $, e)
-    s, i, alpha, beta = q, 1, [cfg.Marker('$')], []
+    s, i, alpha, beta = q, 1, [Marker('$')], []
 
     write(bottomup_state_str(s, i, alpha, beta) + '\n')
 
@@ -416,7 +419,7 @@ def bottomup_backtrack_parse(G, w, out=None):
     # h(gamma) is a right parse of w in reverse. Then halt.
     # If step 3 is not applicable, go to step 4.
 
-        if s == q and i == n + 1 and alpha == [cfg.Marker('$'), S]:
+        if s == q and i == n + 1 and alpha == [Marker('$'), S]:
             s = t
             write('|- ' + bottomup_state_str(s, i, alpha, beta) + '\n')
             def h(ss):
@@ -457,7 +460,7 @@ def bottomup_backtrack_parse(G, w, out=None):
 
         while True:
             if s == b and len(alpha) > 0 and \
-               isinstance(alpha[-1], cfg.Nonterminal) and \
+               isinstance(alpha[-1], Nonterminal) and \
                len(beta) > 0 and isinstance(beta[0], int):
                 A = alpha[-1]
                 j = beta[0]
@@ -487,7 +490,7 @@ def bottomup_backtrack_parse(G, w, out=None):
                               bottomup_state_str(s, i, alpha, beta) + '\n')
                         break # to step 1
             elif s == b and len(alpha) > 0 and \
-                 isinstance(alpha[-1], cfg.Terminal) and \
+                 isinstance(alpha[-1], Terminal) and \
                  len(beta) > 0 and beta[0] == shift: # Condition (d)
                 i -= 1
                 alpha.pop()
@@ -539,10 +542,10 @@ def parse_table_iterators_str(T, coords):
 
 def _cyk_check_args(G, w, check):
     _check_args(G, w)
-    if G.has_empty_rules():
+    if has_empty_rules(G):
         raise ValueError('grammar has empty rules')
     if check:
-        if not cnf.is_cnf(G):
+        if not is_cnf(G):
             raise ValueError('grammar is not in Chomsky normal form')
 
 def cocke_younger_kasami_algorithm(G, w, out=None, check=True):
@@ -659,7 +662,7 @@ def left_parse_from_parse_table(G, w, T, check=True):
 
     def gen(i, j, A):
         if j == 1:
-            p = cfg.ProductionRule(A, [a[i]])
+            p = ProductionRule(A, [a[i]])
             if p in P:
                 return [P.index(p)]
             else:
@@ -670,7 +673,7 @@ def left_parse_from_parse_table(G, w, T, check=True):
             for k in xrange(1, j):
                 for B in t[i][k]:
                     for C in t[i+k][j-k]:
-                        p = cfg.ProductionRule(A, [B, C])
+                        p = ProductionRule(A, [B, C])
                         if p in P:
                             m = P.index(p)
                             stop = True
@@ -697,7 +700,7 @@ class Item(object):
     '''An "item" for a CFG rule.'''
 
     def __init__(self, production, k, i):
-        assert isinstance(production, cfg.ProductionRule)
+        assert isinstance(production, ProductionRule)
         self.production = production
         self.k = k
         self.i = i
@@ -870,7 +873,7 @@ def right_parse_from_parse_lists(G, w, I, out=None):
     Output: pi, a right parse for w, or an "error" message.'''
 
     _check_args(G, w)
-    if G.cyclic():
+    if is_cyclic(G):
         raise ValueError('grammar is cyclic')
 
     Nu = G.nonterminals
@@ -920,7 +923,7 @@ def right_parse_from_parse_lists(G, w, I, out=None):
                        other_item.m == other_item.k:
                         gamma = other_item.production.right_side
                         r = other_item.i
-                        check_item = Item(cfg.ProductionRule(A, beta), k-1, i)
+                        check_item = Item(ProductionRule(A, beta), k-1, i)
                         if check_item in I[r]:
                             R(other_item, l)
                             k -= 1

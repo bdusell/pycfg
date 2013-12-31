@@ -1,5 +1,5 @@
 from cfg.aho_ullman import *
-from cfg.cfg import *
+from cfg.core import *
 import unittest
 
 CFG = ContextFreeGrammar
@@ -209,7 +209,7 @@ F -> a
 S -> AA | AS | b
 A -> SA | AS | a
 ''')
-        w = map(cfg.Terminal, 'abaab')
+        w = map(Terminal, 'abaab')
         expected_table = \
             [[set([Nonterminal('A')]),
               set([Nonterminal('A'), Nonterminal('S')]),
@@ -286,7 +286,7 @@ T -> F
 F -> (E)
 F -> a
 ''')
-        w = map(cfg.Terminal, '(a+a)*a')
+        w = map(Terminal, '(a+a)*a')
         expected_lists = \
 [[Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'), Terminal('+'), Nonterminal('E'))), 0, 0),
   Item(ProductionRule(Nonterminal('E'), (Nonterminal('T'),)), 0, 0),

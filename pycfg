@@ -1,3 +1,4 @@
 #!/bin/bash
 export PYTHONPATH=src
 python pycfg.py $@
+exit $?
