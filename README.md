@@ -1,28 +1,56 @@
 pycfg
 =====
 
-Context free grammar algorithms implemented in Python.
+This repository contains a Python package, `cfg`, which implements
+data structures and algorithms for carrying out sophisticated analysis and
+parsing of arbitrary context-free grammars. The main vehicle used for CFG
+parsing is the GLR (Generalized-LR) algorithm discovered by Masaru Tomita.
+Several pedagogical parsing algorithms described by Alfred Aho and Jeffrey
+Ullman are also included. A tool named `pycfg` provides a command-
+line interface to CFG analysis algorithms.
 
-The main goal of this library is to provide utilities for parsing arbitrary
-context-free grammars using algorithms based on Masaru Tomita's generalized
-LR (GLR) parsing algorithm, and ultimately apply them to natural language
-parsing and machine translation.
+Contents
+--------
 
-Development is currently in progress. For the time being, feel free to play
-around with the pycfg executable in the top-level directory, which reads
-CFG specifications from stdin and can output all sorts of useful information
-about them (e.g. first and follow sets, SLR tables, LR(0) automaton diagrams)
-using pieces of this library. The command
+The file `pycfg` is a command-line utility for analyzing CFGs. It can:
+
+* Convert grammars to Chomsky Normal Form
+* Compute a grammar's first and follow sets
+* Create a diagram of a grammar's DFA of LR(0) items used for LR parsing
+* Compute a grammar's SLR(1) parse table
+* Generate a report in HTML of the steps taken to build the parse table
+* Make you a sandwich, as long as you have root privileges
+
+Use the command
 
     ./pycfg
-  
-will output a help message with further instructions.
 
-The command
+without arguments to see a full help message.
+
+The `src/` directory contains the Python packages `cfg` and `util`. Included
+in `cfg` are:
+
+* A class structure for context free grammars, symbols, parse trees, etc.
+* Tomita's GLR parsing algorithm, modified to handle empty production rules
+  and cyclic grammars
+* Algorithms for building first sets, follow sets, and multi-valued SLR parse
+  tables
+* Parsing algorithms described by Aho and Ullman and included for pedagogical
+  purposes
+* Other algorithms such as cycle and left-recursion detection
+
+The `test/` directory contains unit tests for most components in the
+library. Use
 
     ./run_tests
 
-will run all unit tests, which should pass.
+to run all of the test cases included here, which should all pass.
+
+The `demos/` directory contains some standalone Python scripts demonstrating
+the use of the library.
+
+Demo
+----
 
 The demos/ directory has a number of driver programs demonstrating the use
 of various parts of the library. For example, the command
@@ -52,3 +80,13 @@ characters at the prompt and then press Ctrl-C, as shown below:
 
 This corresponds to the sentence "I saw Jane and Jack hit the man with a
 telescope."
+
+References
+----------
+
+* Aho, Alfred V., and Ullman, Jeffrey D. *The Theory of Parsing, Translation,
+  and Compiling: Volume I: Parsing*. Englewood Cliffs, NJ: Prentice-Hall,
+  Inc. 1972.
+* Tomita, Masaru (Ed.). *Generalized LR Parsing*. Boston, MA: Kluwer Academic
+  Publishers 1991.
+
