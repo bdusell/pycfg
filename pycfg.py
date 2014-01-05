@@ -1,4 +1,4 @@
-import sys, subprocess
+import sys, os, subprocess, tempfile
 from cfg import core, cfg_reader, slr, cnf
 
 def print_usage():
@@ -141,29 +141,28 @@ def report_html(G):
          T.follow_sets().html(),
          T.html())
 
-def tempfile(suffix):
-    p = subprocess.Popen(['tempfile', '-s', suffix], stdout=subprocess.PIPE)
-    tempfile_name = p.stdout.read().strip()
-    p.wait()
-    return tempfile_name
-
 def preferred_open(filename):
     subprocess.call(['xdg-open', filename])
 
 def browser_automaton(G):
-    png = tempfile('.png')
-    dot = subprocess.Popen(['dot', '-Tpng'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    dot.stdin.write(slr.Automaton(G).dot_html())
-    dot.stdin.close()
-    with open(png, 'w') as fout:
-        fout.write(dot.stdout.read())
-    dot.wait()
-    preferred_open(png)
+    png = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as png:
+            dot = subprocess.Popen(['dot', '-Tpng', '-o', png.name],
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            dot.stdin.write(slr.Automaton(G).dot_html())
+            dot.stdin.close()
+            dot.wait()
+            preferred_open(png.name)
+    finally:
+        if png is not None:
+            os.remove(png.name)
 
 def browser_html(html):
-    tmp = tempfile('.html')
-    with open(tmp, 'w') as fout:
-        fout.write('''\
+    tmp = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as tmp:
+            tmp.write('''\
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -176,7 +175,10 @@ def browser_html(html):
   </body>
 </html>
 ''' % html)
-    preferred_open(tmp)
+        preferred_open(tmp.name)
+    finally:
+        if tmp is not None:
+            os.remove(tmp.name)
 
 def main():
     args = sys.argv[1:]

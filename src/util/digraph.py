@@ -115,8 +115,8 @@ class Digraph:
     def cyclic(self):
         '''Return whether the graph contains a cycle.'''
         vertex_markers = {v : 0 for v in self._edges}
-        for s in vertex_markers:
-            if vertex_markers[s] == 0:
+        for s, marker in vertex_markers.iteritems():
+            if marker == 0:
                 if self._cyclic_visit(vertex_markers, s):
                     return True
         return False
@@ -134,3 +134,24 @@ class Digraph:
 
     def __str__(self):
         return 'vertices = %s\nedges = %s' % (self.vertices, self.edges)
+
+_VISITING, _VISITED = range(2)
+
+def is_cyclic(root, successor_func):
+    '''Determine whether a graph is cyclic. The graph is defined by a starting
+    node and a successor function which generates the child nodes of a node in
+    the graph. The nodes must be hashable.'''
+    visited = { root : _VISITING }
+    def visit(node):
+        for child in successor_func(node):
+            if child in visited:
+                if visited[child] == _VISITED:
+                    return True
+            else:
+                visited[child] = _VISITING
+                if visit(child):
+                    return True
+                visited[child] = _VISITED
+        return False
+    return visit(root)
+

@@ -1,6 +1,7 @@
 import sys
 from cfg.core import *
 from cfg.glr import *
+from cfg.cfg_reader import *
 from subprocutils import show_dot
 
 def terminal_input_iterator():
@@ -18,7 +19,7 @@ def main():
         sys.exit(1)
     try:
         with open(sys.argv[1]) as fin:
-            grammar = ContextFreeGrammar(fin.read())
+            grammar = parse_cfg(fin.read())
         try:
             for t in parse(grammar, terminal_input_iterator()):
                 show_dot(t.dot_str())

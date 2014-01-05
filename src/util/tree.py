@@ -1,12 +1,13 @@
 '''A generic tree class.'''
 
 from util.dot import escape
+from util.mixin import Keyed
 
 def Tree(node_type):
     '''A parameterized tree class which asserts that its nodes carry values
     that are instances of a particular type.'''
     
-    class TreeClass(object):
+    class TreeClass(Keyed):
 
         def __init__(self, value, subtrees=None):
             if not isinstance(value, node_type):
@@ -37,10 +38,13 @@ def Tree(node_type):
         def __repr__(self):
             return '%s(%r, %r)' % (self.__class__.__name__, self.value, self.subtrees)
 
+        def __key__(self, y):
+            return (self._value, self._subtrees)
+
         def __eq__(self, y):
-            return isinstance(y, self.__class__) and \
-                   self.value == y.value and \
-                   self.subtrees == y.subtrees
+            return (
+                isinstance(y, self.__class__) and
+                super(TreeClass, self).__eq__(y))
 
         def _dot_lines(self):
             return ['q%s [label="%s"]' % (id(self), escape(str(self.value)))] + \

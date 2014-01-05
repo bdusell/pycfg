@@ -1,4 +1,5 @@
 #!/bin/bash
-export PYTHONPATH=src
-python pycfg.py $@
+DIR=$(dirname "$(readlink $0)")
+export PYTHONPATH="$DIR/src"
+python "$DIR/pycfg.py" $@
 exit $?
