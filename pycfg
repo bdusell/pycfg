@@ -1,5 +1,5 @@
 #!/bin/bash
-DIR=$(dirname "$(readlink $0)")
+DIR=$(dirname "$(readlink -f "$0")")
 export PYTHONPATH="$DIR/src"
 python "$DIR/pycfg.py" $@
 exit $?
