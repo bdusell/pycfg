@@ -38,12 +38,12 @@ def Tree(node_type):
         def __repr__(self):
             return '%s(%r, %r)' % (self.__class__.__name__, self.value, self.subtrees)
 
-        def __key__(self, y):
+        def __key__(self):
             return (self._value, self._subtrees)
 
         def __eq__(self, y):
             return (
-                isinstance(y, self.__class__) and
+                isinstance(y, TreeClass) and
                 super(TreeClass, self).__eq__(y))
 
         def _dot_lines(self):

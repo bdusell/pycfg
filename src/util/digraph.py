@@ -114,23 +114,7 @@ class Digraph:
 
     def cyclic(self):
         '''Return whether the graph contains a cycle.'''
-        vertex_markers = {v : 0 for v in self._edges}
-        for s, marker in vertex_markers.iteritems():
-            if marker == 0:
-                if self._cyclic_visit(vertex_markers, s):
-                    return True
-        return False
-
-    def _cyclic_visit(self, vertex_markers, s):
-        vertex_markers[s] = 1
-        for t in self._edges[s]:
-            if vertex_markers[t] == 1:
-                return True
-            elif vertex_markers[t] == 0:
-                if self._cyclic_visit(vertex_markers, t):
-                    return True
-        vertex_markers[s] = 2
-        return False
+        return is_cyclic_multi(self._edges.iterkeys(), lambda x: self._edges[x])
 
     def __str__(self):
         return 'vertices = %s\nedges = %s' % (self.vertices, self.edges)
@@ -145,7 +129,7 @@ def is_cyclic(root, successor_func):
     def visit(node):
         for child in successor_func(node):
             if child in visited:
-                if visited[child] == _VISITED:
+                if visited[child] == _VISITING:
                     return True
             else:
                 visited[child] = _VISITING
@@ -154,4 +138,21 @@ def is_cyclic(root, successor_func):
                 visited[child] = _VISITED
         return False
     return visit(root)
+
+def is_cyclic_multi(roots, successor_func):
+    '''Determine whether a graph is cyclic, given some subset of its nodes
+    which determine the starting points of the graph traversal.'''
+    visited = {}
+    def visit(nodes):
+        for node in nodes:
+            if node in visited:
+                if visited[node] == _VISITING:
+                    return True
+            else:
+                visited[node] = _VISITING
+                if visit(successor_func(node)):
+                    return True
+                visited[node] = _VISITED
+        return False
+    return visit(roots)
 
