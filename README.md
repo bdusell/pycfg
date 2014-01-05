@@ -6,8 +6,8 @@ data structures and algorithms for carrying out sophisticated analysis and
 parsing of arbitrary context-free grammars. The main vehicle used for CFG
 parsing is the GLR (Generalized-LR) algorithm discovered by Masaru Tomita.
 Several pedagogical parsing algorithms described by Alfred Aho and Jeffrey
-Ullman are also included. A tool named `pycfg` provides a command-
-line interface to CFG analysis algorithms.
+Ullman are also included. A tool named `pycfg` provides a command-line
+interface to CFG analysis algorithms.
 
 Contents
 --------
