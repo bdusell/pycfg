@@ -25,7 +25,6 @@ Usage: pycfg ((-g|n|a|f|t -h|b) | (-m -b)) [input] [-o <output>]
     Flags:
     -h         Format the result in html.
     -b         Display the result in the browser.
-    -c         Format the grammar and parse table for use in C++ code.
 
     Modes:
     -g -h|b    Simply display the grammar in the output format specified.
